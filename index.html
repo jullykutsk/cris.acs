@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saúde Comunidade - Controle e Visitas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1d4ed8',
+                        secondary: '#475569'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased pb-20">
+
+    <!-- Topo / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg">CV</div>
+                <div>
+                    <h1 class="font-bold text-slate-900 leading-tight">Saúde Comunidade</h1>
+                    <p class="text-xs text-slate-500">Controle e Visitas (LGPD Compliant)</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">UBS Central</span>
+            </div>
+        </div>
+
+        <!-- Abas de Navegação -->
+        <div class="max-w-4xl mx-auto px-4 flex space-x-6 border-t border-slate-100 text-sm font-medium">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent">Dashboard & Gráficos</button>
+            <button onclick="switchTab('nucleos')" id="tab-nucleos" class="py-3 text-primary border-b-2 border-primary transition-colors">Núcleos Familiares</button>
+            <button onclick="switchTab('relatorios')" id="tab-relatorios" class="py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent">Relatórios & Exames</button>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+
+        <!-- ABA 1: DASHBOARD -->
+        <section id="content-dashboard" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Visitas Realizadas (Mês)</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1">128 / 150</h3>
+                    <span class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded">85% da meta</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Exames Pendentes</p>
+                    <h3 class="text-2xl font-bold text-amber-600 mt-1">14</h3>
+                    <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded">Requer atenção</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Núcleos Cadastrados</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1">42</h3>
+                    <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded">Ativos na área</span>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Volume de Visitas Semanais</h3>
+                    <canvas id="graficoVisitas" height="180"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Status de Exames Pendentes</h3>
+                    <canvas id="graficoExames" height="180"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: NÚCLEOS FAMILIARES (PRINCIPAL) -->
+        <section id="content-nucleos" class="space-y-4">
+            
+            <!-- Breadcrumb e Filtros -->
+            <div id="breadcrumb-container" class="text-xs text-slate-500 font-medium flex items-center space-x-2">
+                <span class="text-primary font-bold">Núcleos Familiares</span>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between gap-3">
+                <input type="text" id="searchInput" oninput="filtrarTabela()" placeholder="Buscar por sigla ou programa..." class="w-full md:w-80 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+                <button onclick="alert('Funcionalidade para cadastrar novo núcleo.')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Novo Núcleo</button>
+            </div>
+
+            <!-- Tabela Dinâmica -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="tabelaPrincipal">
+                        <thead id="tabelaHead" class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3.5 font-semibold">Endereço (Sigla)</th>
+                                <th class="p-3.5 font-semibold">Programa</th>
+                                <th class="p-3.5 font-semibold">Composição Familiar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 3: RELATÓRIOS -->
+        <section id="content-relatorios" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-center py-12">
+                <h3 class="font-bold text-slate-800 text-lg">Módulo de Relatórios e Indicadores</h3>
+                <p class="text-slate-500 text-sm mt-1">Exportação de dados consolidados e controle de exames gerais da unidade.</p>
+                <button onclick="alert('Relatório exportado com sucesso!')" class="mt-4 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Exportar Relatório PDF</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE EDIÇÃO DE PACIENTE E VISITA -->
+    <div id="modalPaciente" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                    <h3 id="modalTitulo" class="font-bold text-slate-900 text-base">Editar Paciente e Visita</h3>
+                    <p class="text-xs text-slate-500" id="modalSubtitulo">Gerenciamento de dados e registro de atendimento</p>
+                </div>
+                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <!-- Alteração de Dados -->
+                <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                    <h4 class="font-semibold text-slate-700 text-xs uppercase tracking-wider">Dados Cadastrais</h4>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Endereço (Sigla / Número)</label>
+                        <input type="text" id="inputEndereco" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Telefone de Contato / Referência</label>
+                        <input type="text" id="inputTelefone" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white" placeholder="(00) 00000-0000">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Condição / Perfil Clínico</label>
+                        <input type="text" id="inputCondicao" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                    </div>
+                </div>
+
+                <!-- Registro de Visita Domiciliar -->
+                <div class="space-y-3 bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
+                    <h4 class="font-semibold text-primary text-xs uppercase tracking-wider">Registro de Visita Domiciliar</h4>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Data da Visita</label>
+                        <input type="date" id="inputDataVisita" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Observações da Visita</label>
+                        <textarea id="inputObsVisita" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white" placeholder="Relato do atendimento, orientações dadas..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button onclick="fecharModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">Cancelar</button>
+                <button onclick="salvarAlteracoes()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        // Banco de Dados Simulado em Memória
+        let dadosNucleos = [
+            {
+                id: 1,
+                sigla: 'EPR-142',
+                programa: 'Hipertensão e Diabetes',
+                composicao: '4 moradores (1 idoso, 0 criança)',
+                pacientes: [
+                    { id: 101, perfil: 'Hipertenso Controlado', ultimaVisita: '10/05/2026', telefone: '(41) 99888-1111', condicao: 'Hipertenso Controlado' },
+                    { id: 102, perfil: 'Estável', ultimaVisita: '10/05/2026', telefone: '(41) 99888-2222', condicao: 'Diabético Tipo 2' }
+                ]
+            },
+            {
+                id: 2,
+                sigla: 'JSM-89',
+                programa: 'Saúde da Criança',
+                composicao: '3 moradores (0 idoso, 2 criança)',
+                pacientes: [
+                    { id: 201, perfil: 'Vacinação em dia', ultimaVisita: '08/05/2026', telefone: '(41) 97777-3333', condicao: ' Lactente acompanhado' }
+                ]
+            },
+            {
+                id: 3,
+                sigla: 'RBF-210',
+                programa: 'Saúde da Mulher / Gestantes',
+                composicao: '2 moradores (0 idoso, 0 criança)',
+                pacientes: [
+                    { id: 301, perfil: 'Gestante 24 semanas', ultimaVisita: '02/05/2026', telefone: '(41) 96666-4444', condicao: 'Pré-natal em andamento' }
+                ]
+            }
+        ];
+
+        let nivelAtual = 'nucleos'; // 'nucleos', 'pacientes'
+        let nucleoSelecionado = null;
+        let pacienteSelecionado = null;
+
+        function switchTab(tab) {
+            document.getElementById('content-dashboard').classList.add('hidden');
+            document.getElementById('content-nucleos').classList.add('hidden');
+            document.getElementById('content-relatorios').classList.add('hidden');
+
+            document.getElementById('tab-dashboard').className = 'py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent';
+            document.getElementById('tab-nucleos').className = 'py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent';
+            document.getElementById('tab-relatorios').className = 'py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent';
+
+            document.getElementById('content-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab).className = 'py-3 text-primary border-b-2 border-primary transition-colors font-medium';
+
+            if(tab === 'dashboard') initCharts();
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabelaBody');
+            const thead = document.getElementById('tabelaHead');
+            const breadcrumb = document.getElementById('breadcrumb-container');
+            tbody.innerHTML = '';
+
+            if (nivelAtual === 'nucleos') {
+                breadcrumb.innerHTML = `<span class="text-primary font-bold">Núcleos Familiares</span>`;
+                thead.innerHTML = `
+                    <tr>
+                        <th class="p-3.5 font-semibold">Endereço (Sigla)</th>
+                        <th class="p-3.5 font-semibold">Programa</th>
+                        <th class="p-3.5 font-semibold">Composição Familiar</th>
+                    </tr>
+                `;
+
+                dadosNucleosforEachSafe = dadosNucleos.forEach(n => {
+                    let tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 cursor-pointer transition-colors';
+                    tr.onclick = () => abrirPacientes(n.id);
+                    tr.innerHTML = `
+                        <td class="p-3.5 font-bold text-primary">${n.sigla}</td>
+                        <td class="p-3.5 text-slate-700">${n.programa}</td>
+                        <td class="p-3.5 text-slate-500">${n.composicao}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } else if (nivelAtual === 'pacientes') {
+                breadcrumb.innerHTML = `
+                    <button onclick="voltarNucleos()" class="text-slate-500 hover:underline">Núcleos Familiares</button>
+                    <span>/</span>
+                    <span class="text-primary font-bold">Núcleo: ${nucleoSelecionado.sigla} (${nucleoSelecionado.programa})</span>
+                `;
+                thead.innerHTML = `
+                    <tr>
+                        <th class="p-3.5 font-semibold">Condição / Perfil</th>
+                        <th class="p-3.5 font-semibold">Última Visita</th>
+                        <th class="p-3.5 font-semibold text-right">Ações / Editar</th>
+                    </tr>
+                `;
+
+                nucleoSelecionado.pacientes.forEach(p => {
+                    let tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-colors';
+                    tr.innerHTML = `
+                        <td class="p-3.5 font-medium text-slate-800"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs">${p.perfil}</span></td>
+                        <td class="p-3.5 text-slate-600">${p.ultimaVisita}</td>
+                        <td class="p-3.5 text-right">
+                            <button onclick='abrirModal(${p.id})' class="bg-blue-50 text-primary px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">Editar Paciente</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function abrirPacientes(idNucleo) {
+            nucleoSelecionado = dadosNucleos.find(n => n.id === idNucleo);
+            nivelAtual = 'pacientes';
+            renderizarTabela();
+        }
+
+        function voltarNucleos() {
+            nivelAtual = 'nucleos';
+            nucleoSelecionado = null;
+            renderizarTabela();
+        }
+
+        function filtrarTabela() {
+            if (nivelAtual !== 'nucleos') return;
+            const termo = document.getElementById('searchInput').value.toLowerCase();
+            const tbody = document.getElementById('tabelaBody');
+            tbody.innerHTML = '';
+
+            const filtrados = dadosNucleos.filter(n => 
+                n.sigla.toLowerCase().includes(termo) || n.programa.toLowerCase().includes(termo)
+            );
+
+            filtrados.forEach(n => {
+                let tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 cursor-pointer transition-colors';
+                tr.onclick = () => abrirPacientes(n.id);
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold text-primary">${n.sigla}</td>
+                    <td class="p-3.5 text-slate-700">${n.programa}</td>
+                    <td class="p-3.5 text-slate-500">${n.composicao}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function abrirModal(idPaciente) {
+            pacienteSelecionado = nucleoSelecionado.pacientes.find(p => p.id === idPaciente);
+            
+            document.getElementById('inputEndereco').value = nucleoSelecionado.sigla;
+            document.getElementById('inputTelefone').value = pacienteSelecionado.telefone;
+            document.getElementById('inputCondicao').value = pacienteSelecionado.condicao;
+            document.getElementById('inputDataVisita').value = new Date().toISOString().split('T')[0];
+            document.getElementById('inputObsVisita').value = '';
+
+            document.getElementById('modalPaciente').classList.remove('hidden');
+            document.getElementById('modalPaciente').classList.add('flex');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalPaciente').classList.remove('flex');
+            document.getElementById('modalPaciente').classList.add('hidden');
+        }
+
+        function salvarAlteracoes() {
+            // Atualiza os dados mockados
+            nucleoSelecionado.sigla = document.getElementById('inputEndereco').value;
+            pacienteSelecionado.telefone = document.getElementById('inputTelefone').value;
+            pacienteSelecionado.condicao = document.getElementById('inputCondicao').value;
+            pacienteSelecionado.perfil = document.getElementById('inputCondicao').value;
+            
+            const dataVisitaInput = document.getElementById('inputDataVisita').value;
+            if(dataVisitaInput) {
+                const partes = dataVisitaInput.split('-');
+                pacienteSelecionado.ultimaVisita = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+
+            fecharModal();
+            renderizarTabela();
+            alert('Dados e visita atualizados com sucesso!');
+        }
+
+        let chartsInitialized = false;
+        function initCharts() {
+            if(chartsInitialized) return;
+            chartsInitialized = true;
+
+            new Chart(document.getElementById('graficoVisitas'), {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    datasets: [{
+                        label: '
