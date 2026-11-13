@@ -34,7 +34,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">UBS Central</span>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">UBS Umbará II</span>
             </div>
         </div>
 
@@ -90,15 +90,15 @@
                 <span class="text-primary font-bold">Núcleos Familiares</span>
             </div>
 
-            <!-- Área de Importação / Cola Rápida de Dados -->
+            <!-- Área de Importação Inteligente (Cole do Relatório/Excel) -->
             <div class="bg-white p-4 rounded-xl border border-dashed border-slate-300 shadow-sm space-y-2">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Área de Importação Rápida</span>
-                    <span class="text-[11px] text-slate-400">Formato: Sigla | Programa | Composição</span>
+                    <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Área de Importação Rápida (Cole as linhas do relatório)</span>
+                    <span class="text-[11px] text-slate-400">Ex: Programa | Classificação | Nome | ... | Rua | Número</span>
                 </div>
                 <div class="flex flex-col md:flex-row gap-2">
-                    <textarea id="inputColaDados" rows="2" placeholder="Ex: MTR-15 | Saúde Mental | 2 moradores (0 idoso, 0 criança)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 bg-slate-50"></textarea>
-                    <button onclick="processarDadosColados()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap">Processar e Inserir</button>
+                    <textarea id="inputColaDados" rows="2" placeholder="Cole aqui as linhas copiadas do relatório..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 bg-slate-50"></textarea>
+                    <button onclick="processarDadosColados()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap">Processar e Agrupar</button>
                 </div>
             </div>
 
@@ -190,34 +190,25 @@
 
     <!-- Lógica JavaScript -->
     <script>
-        // Banco de Dados Simulado em Memória
+        // Banco de Dados Simulado em Memória (Exemplos Iniciais)
         let dadosNucleos = [
             {
                 id: 1,
-                sigla: 'EPR-142',
-                programa: 'Hipertensão e Diabetes',
-                composicao: '4 moradores (1 idoso, 0 criança)',
+                sigla: 'EPR-5385',
+                programa: 'Saúde da Família / Diversos',
+                composicao: '3 moradores (1 idoso, 1 criança)',
                 pacientes: [
-                    { id: 101, perfil: 'Hipertenso Controlado', ultimaVisita: '10/05/2026', telefone: '(41) 99888-1111', condicao: 'Hipertenso Controlado' },
-                    { id: 102, perfil: 'Estável', ultimaVisita: '10/05/2026', telefone: '(41) 99888-2222', condicao: 'Diabético Tipo 2' }
+                    { id: 101, perfil: 'CRIANCA: CRIANCA NORMAL / ROTINA', ultimaVisita: '12/06/2026', telefone: '(41) 99888-1111', condicao: 'Criança Normal' },
+                    { id: 102, perfil: 'HIPERTENSO: RISCO INTERMEDIÁRIO', ultimaVisita: '04/05/2026', telefone: '(41) 99888-2222', condicao: 'Hipertenso Risco Intermediário' }
                 ]
             },
             {
                 id: 2,
-                sigla: 'JSM-89',
-                programa: 'Saúde da Criança',
-                composicao: '3 moradores (0 idoso, 2 criança)',
+                sigla: 'NAT-160',
+                programa: 'Hipertensão e Diabetes',
+                composicao: '2 moradores (2 idosos, 0 criança)',
                 pacientes: [
-                    { id: 201, perfil: 'Vacinação em dia', ultimaVisita: '08/05/2026', telefone: '(41) 97777-3333', condicao: 'Lactente acompanhado' }
-                ]
-            },
-            {
-                id: 3,
-                sigla: 'RBF-210',
-                programa: 'Saúde da Mulher / Gestantes',
-                composicao: '2 moradores (0 idoso, 0 criança)',
-                pacientes: [
-                    { id: 301, perfil: 'Gestante 24 semanas', ultimaVisita: '02/05/2026', telefone: '(41) 96666-4444', condicao: 'Pré-natal em andamento' }
+                    { id: 201, perfil: 'DIABETICO: TIPO 2 - RISCO ALTO', ultimaVisita: '18/05/2026', telefone: '(41) 97777-3333', condicao: 'Diabetes Tipo 2 Risco Alto' }
                 ]
             }
         ];
@@ -337,7 +328,7 @@
         function processarDadosColados() {
             const texto = document.getElementById('inputColaDados').value.trim();
             if (!texto) {
-                alert('Por favor, cole ou digite os dados antes de processar.');
+                alert('Por favor, cole os dados antes de processar.');
                 return;
             }
 
@@ -345,17 +336,44 @@
             let adicionados = 0;
 
             linhas.forEach(linha => {
-                const partes = linha.split('|').map(p => p.trim());
+                const partes = linha.includes('|') ? linha.split('|').map(p => p.trim()) : linha.split('\t').map(p => p.trim());
+                
                 if(partes.length >= 3) {
-                    dadosNucleos.push({
+                    let programa = partes[0];
+                    let perfilClinico = partes[1];
+                    let nomePaciente = partes[2];
+                    let enderecoCompleto = partes.length > 6 ? partes[6] : "RUA GERAL";
+                    let numeroCasa = partes.length > 7 ? partes[7] : "00";
+
+                    // Gera sigla automática do endereço (LGPD)
+                    let siglaEndereco = enderecoCompleto.replace(/RUA|AVENIDA|ALAMEDA|TRAVESSA/gi, '')
+                        .trim()
+                        .split(' ')
+                        .map(w => w[0])
+                        .join('')
+                        .toUpperCase() + '-' + numeroCasa;
+
+                    let nucleoExistente = dadosNucleos.find(n => n.sigla === siglaEndereco);
+
+                    let novoPaciente = {
                         id: Date.now() + Math.random(),
-                        sigla: partes[0].toUpperCase(),
-                        programa: partes[1],
-                        composicao: partes[2],
-                        pacientes: [
-                            { id: Date.now() + 10, perfil: 'Acompanhamento Inicial', ultimaVisita: 'Hoje', telefone: '(41) 00000-0000', condicao: 'Cadastrado via importação' }
-                        ]
-                    });
+                        perfil: `${programa}: ${perfilClinico}`,
+                        ultimaVisita: 'Pendente',
+                        telefone: '(41) 90000-0000',
+                        condicao: perfilClinico
+                    };
+
+                    if (nucleoExistente) {
+                        nucleoExistente.pacientes.push(novoPaciente);
+                    } else {
+                        dadosNucleos.push({
+                            id: Date.now() + Math.random(),
+                            sigla: siglaEndereco,
+                            programa: programa,
+                            composicao: `1 morador cadastrado`,
+                            pacientes: [novoPaciente]
+                        });
+                    }
                     adicionados++;
                 }
             });
@@ -363,9 +381,9 @@
             if(adicionados > 0) {
                 document.getElementById('inputColaDados').value = '';
                 renderizarTabela();
-                alert(`${adicionados} núcleo(s) importado(s) com sucesso!`);
+                alert(`${adicionados} registro(s) processado(s) e agrupados por endereço com sucesso!`);
             } else {
-                alert('Formato inválido. Use o padrão: Sigla | Programa | Composição');
+                alert('Formato não reconhecido. Certifique-se de colar as colunas do relatório.');
             }
         }
 
