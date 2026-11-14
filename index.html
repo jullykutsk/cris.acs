@@ -177,7 +177,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família, Próximo Exame, Próxima Consulta, ECG, MAPA.</p>
+                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família, Glicada, ECG, MAPA, Semanas Gestacionais, Risco, Vacinas, Suplementos, Rede Apoio, Ambiente.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -265,7 +265,6 @@
             return 'Ativo';
         }
 
-        // Função para converter o endereço completo importado em iniciais automaticamente
         function formatarEnderecoParaIniciais(nomeRua) {
             if(!nomeRua) return 'RUA';
             const limpo = nomeRua.trim().toUpperCase();
@@ -273,15 +272,15 @@
                 const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === limpo || limpo.includes(r.nome.toUpperCase()));
                 if(achado) return achado.iniciais;
             }
-            return limpo; // Se não achar na lista, retorna o original limpo
+            return limpo;
         }
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos / Idosos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
-                { id: 2, programa: "Hipertensos", nome: "Rosa A. P.", idade: 81, sexo: "F", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
-                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
-                { id: 4, programa: "Crianças / Idosos", nome: "João F. S.", idade: 65, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
+                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", glicada: "7.2%", ecg: "OK", mapa: "Pendente", semanas: "-", risco: "-", vacinas: "Em dia", suplementos: "-", redeApoio: "-", ambiente: "Seguro" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", glicada: "-", ecg: "-", mapa: "-", semanas: "24 semanas", risco: "Alto Risco", vacinas: "Pendente DTPA", suplementos: "Ferro / Ácido Fólico", redeApoio: "Possui", ambiente: "-" },
+                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", glicada: "-", ecg: "-", mapa: "-", semanas: "-", risco: "-", vacinas: "Influenza em dia", suplementos: "-", redeApoio: "-", ambiente: "Risco de queda (sem tapete antiderrapante)" },
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", glicada: "-", ecg: "-", mapa: "-", semanas: "-", risco: "-", vacinas: "Pentavalente em atraso", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "Adequado" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -488,6 +487,32 @@
                 if(statusVisita === 'Urgente') badgeClass = 'bg-red-500/20 text-red-300 border border-red-500/30';
                 if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
 
+                const progU = (p.programa || "").toUpperCase();
+
+                // Monta blocos específicos por tipo de programa de forma dinâmica
+                let detalhesEspecificosHtml = '';
+                
+                if (progU.includes('DIABET') || progU.includes('DM')) {
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Glicada: <strong>${p.glicada || 'Pendente'}</strong></span>`;
+                }
+                if (progU.includes('HIPERTENS') || progU.includes('HAS')) {
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">ECG: <strong>${p.ecg || '-'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">MAPA: <strong>${p.mapa || '-'}</strong></span>`;
+                }
+                if (progU.includes('GESTA') || progU.includes('GES')) {
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Semanas: <strong>${p.semanas || '-'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Risco: <strong>${p.risco || '-'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Suplementos: <strong>${p.suplementos || '-'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Rede de Apoio: <strong>${p.redeApoio || '-'}</strong></span>`;
+                }
+                if (progU.includes('CRIANÇA') || progU.includes('CR')) {
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas (CR): <strong>${p.vacinas || 'Checar'}</strong></span>`;
+                }
+                if (progU.includes('IDOSO') || progU.includes('ID')) {
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas (ID): <strong>${p.vacinas || 'Checar'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Ambiente: <strong>${p.ambiente || 'OK'}</strong></span>`;
+                }
+
                 return `
                     <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
                         <div class="flex justify-between items-start">
@@ -503,9 +528,8 @@
                             <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia}</div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita/Consulta: <strong>${p.ultimaConsulta}</strong></span>
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Próx. Exame: <strong>${p.proximoExame}</strong></span>
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">ECG: <strong class="${p.ecg === 'Pendente' ? 'text-red-400' : 'text-emerald-400'}">${p.ecg}</strong></span>
+                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita: <strong>${p.ultimaConsulta}</strong></span>
+                            ${detalhesEspecificosHtml}
                         </div>
                     </div>
                 `;
@@ -544,20 +568,21 @@
                                 <tr>
                                     <th>Nome Usuário</th>
                                     <th>Programa</th>
-                                    <th>Últ. Visita/Consulta</th>
-                                    <th>Próx. Exame / Consulta</th>
+                                    <th>Últ. Visita</th>
+                                    <th>Dados Específicos / Saúde</th>
                                     <th>Observações / Anotações</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
                 agrupado[chave].forEach(p => {
+                    let infoExtra = `Glicada: ${p.glicada || '-'} | ECG/MAPA: ${p.ecg}/${p.mapa} | Sem: ${p.semanas} | Vac/Amb: ${p.vacinas}/${p.ambiente}`;
                     html += `
                         <tr>
                             <td class="font-medium">${p.nome}</td>
                             <td>${p.programa}</td>
                             <td>${p.ultimaConsulta}</td>
-                            <td>${p.proximoExame} / ${p.proximaConsulta}</td>
+                            <td>${infoExtra}</td>
                             <td class="w-32"></td>
                         </tr>
                     `;
@@ -589,19 +614,24 @@
                             idade: row['Idade'] || row['idade'] || 0,
                             sexo: row['Sexo'] || row['sexo'] || 'F',
                             enderecoOriginal: ruaOriginal.toUpperCase(),
-                            endereco: formatarEnderecoParaIniciais(ruaOriginal), // Converte automaticamente para iniciais
+                            endereco: formatarEnderecoParaIniciais(ruaOriginal),
                             numero: row['Nº'] || row['numero'] || 'S/N',
                             ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
                             bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
-                            proximoExame: row['Próximo Exame'] || 'Pendente',
-                            proximaConsulta: row['Próxima Consulta'] || 'Pendente',
-                            ecg: row['ECG'] || 'Pendente',
-                            mapa: row['MAPA'] || 'Pendente'
+                            glicada: row['Glicada'] || row['glicada'] || '-',
+                            ecg: row['ECG'] || row['ecg'] || '-',
+                            mapa: row['MAPA'] || row['mapa'] || '-',
+                            semanas: row['Semanas'] || row['semanas'] || '-',
+                            risco: row['Risco'] || row['risco'] || '-',
+                            vacinas: row['Vacinas'] || row['vacinas'] || '-',
+                            suplementos: row['Suplementos'] || row['suplementos'] || '-',
+                            redeApoio: row['Rede Apoio'] || row['redeApoio'] || '-',
+                            ambiente: row['Ambiente'] || row['ambiente'] || '-'
                         };
                     });
 
                     localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
-                    alert(`Sucesso! ${pacientes.length} registros importados com conversão segura de endereços.`);
+                    alert(`Sucesso! ${pacientes.length} registros importados com os dados clínicos específicos.`);
                     mudarAba('pacientes');
                     renderizarPacientes();
                 }
