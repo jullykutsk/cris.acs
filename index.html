@@ -34,7 +34,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">UBS Umbará II</span>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">UMS Umbará II</span>
             </div>
         </div>
 
@@ -63,8 +63,8 @@
                     <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded">Requer atenção</span>
                 </div>
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-500 font-medium">Núcleos Cadastrados</p>
-                    <h3 class="text-2xl font-bold text-slate-900 mt-1" id="totalNucleosCard">3</h3>
+                    <p class="text-xs text-slate-500 font-medium">Núcleos com Indicadores</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1" id="totalNucleosCard">2</h3>
                     <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded">Ativos na área</span>
                 </div>
             </div>
@@ -90,15 +90,15 @@
                 <span class="text-primary font-bold">Núcleos Familiares</span>
             </div>
 
-            <!-- Área de Importação Inteligente (Cole do Relatório/Excel) -->
+            <!-- Área de Importação Filtrada por Indicadores -->
             <div class="bg-white p-4 rounded-xl border border-dashed border-slate-300 shadow-sm space-y-2">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Área de Importação Rápida (Cole as linhas do relatório)</span>
-                    <span class="text-[11px] text-slate-400">Ex: Programa | Classificação | Nome | ... | Rua | Número</span>
+                    <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Importação de Relatórios (Filtra apenas HAS, DM, ID, GES, CR)</span>
+                    <span class="text-[11px] text-slate-400">Subtrai dados irrelevantes automaticamente</span>
                 </div>
                 <div class="flex flex-col md:flex-row gap-2">
-                    <textarea id="inputColaDados" rows="2" placeholder="Cole aqui as linhas copiadas do relatório..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 bg-slate-50"></textarea>
-                    <button onclick="processarDadosColados()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap">Processar e Agrupar</button>
+                    <textarea id="inputColaDados" rows="2" placeholder="Cole aqui as linhas copiadas da planilha de Curitiba..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 bg-slate-50"></textarea>
+                    <button onclick="processarDadosColados()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap">Processar e Filtrar</button>
                 </div>
             </div>
 
@@ -190,30 +190,21 @@
 
     <!-- Lógica JavaScript -->
     <script>
-        // Banco de Dados Simulado em Memória (Exemplos Iniciais)
+        // Banco de Dados Simulado
         let dadosNucleos = [
             {
                 id: 1,
                 sigla: 'EPR-5385',
-                programa: 'Saúde da Família / Diversos',
-                composicao: '3 moradores (1 idoso, 1 criança)',
+                programa: 'CR / HAS',
+                composicao: '2 moradores',
                 pacientes: [
-                    { id: 101, perfil: 'CRIANCA: CRIANCA NORMAL / ROTINA', ultimaVisita: '12/06/2026', telefone: '(41) 99888-1111', condicao: 'Criança Normal' },
-                    { id: 102, perfil: 'HIPERTENSO: RISCO INTERMEDIÁRIO', ultimaVisita: '04/05/2026', telefone: '(41) 99888-2222', condicao: 'Hipertenso Risco Intermediário' }
-                ]
-            },
-            {
-                id: 2,
-                sigla: 'NAT-160',
-                programa: 'Hipertensão e Diabetes',
-                composicao: '2 moradores (2 idosos, 0 criança)',
-                pacientes: [
-                    { id: 201, perfil: 'DIABETICO: TIPO 2 - RISCO ALTO', ultimaVisita: '18/05/2026', telefone: '(41) 97777-3333', condicao: 'Diabetes Tipo 2 Risco Alto' }
+                    { id: 101, perfil: 'CR: CRIANCA NORMAL / ROTINA', ultimaVisita: '12/06/2026', telefone: '(41) 99888-1111', condicao: 'Criança Normal' },
+                    { id: 102, perfil: 'HAS: RISCO INTERMEDIÁRIO', ultimaVisita: '04/05/2026', telefone: '(41) 99888-2222', condicao: 'Hipertenso Risco Intermediário' }
                 ]
             }
         ];
 
-        let nivelAtual = 'nucleos'; // 'nucleos', 'pacientes'
+        let nivelAtual = 'nucleos';
         let nucleoSelecionado = null;
         let pacienteSelecionado = null;
 
@@ -240,7 +231,7 @@
             tbody.innerHTML = '';
 
             if (nivelAtual === 'nucleos') {
-                breadcrumb.innerHTML = `<span class="text-primary font-bold">Núcleos Familiares</span>`;
+                breadcrumb.innerHTML = `<span class="text-primary font-bold">Núcleos Familiares (Filtrado por Indicadores)</span>`;
                 thead.innerHTML = `
                     <tr>
                         <th class="p-3.5 font-semibold">Endereço (Sigla)</th>
@@ -334,18 +325,32 @@
 
             const linhas = texto.split('\n');
             let adicionados = 0;
+            let ignorados = 0;
 
             linhas.forEach(linha => {
                 const partes = linha.includes('|') ? linha.split('|').map(p => p.trim()) : linha.split('\t').map(p => p.trim());
                 
                 if(partes.length >= 3) {
-                    let programa = partes[0];
+                    let progOriginal = partes[0].toUpperCase();
                     let perfilClinico = partes[1];
-                    let nomePaciente = partes[2];
-                    let enderecoCompleto = partes.length > 6 ? partes[6] : "RUA GERAL";
+                    let enderecoCompleto = partes.length > 6 ? partes[6] : "";
                     let numeroCasa = partes.length > 7 ? partes[7] : "00";
 
-                    // Gera sigla automática do endereço (LGPD)
+                    // Validação estrita: apenas indicadores permitidos (HAS, DM, ID, GES, CR)
+                    let progAbreviado = '';
+                    if (progOriginal.includes('HIPERTENSO')) progAbreviado = 'HAS';
+                    else if (progOriginal.includes('DIABETICO')) progAbreviado = 'DM';
+                    else if (progOriginal.includes('IDOSO')) progAbreviado = 'ID';
+                    else if (progOriginal.includes('MULHER') || progOriginal.includes('GESTA') || progOriginal.includes('CLIMATERIO')) progAbreviado = 'GES';
+                    else if (progOriginal.includes('CRIANCA')) progAbreviado = 'CR';
+
+                    // Se não for nenhum dos indicadores oficiais, subtrai/ignora o registro
+                    if (!progAbreviado || !enderecoCompleto) {
+                        ignorados++;
+                        return;
+                    }
+
+                    // Gera sigla do endereço (LGPD)
                     let siglaEndereco = enderecoCompleto.replace(/RUA|AVENIDA|ALAMEDA|TRAVESSA/gi, '')
                         .trim()
                         .split(' ')
@@ -357,34 +362,36 @@
 
                     let novoPaciente = {
                         id: Date.now() + Math.random(),
-                        perfil: `${programa}: ${perfilClinico}`,
+                        perfil: `${progAbreviado}: ${perfilClinico}`,
                         ultimaVisita: 'Pendente',
                         telefone: '(41) 90000-0000',
                         condicao: perfilClinico
                     };
 
                     if (nucleoExistente) {
+                        if(!nucleoExistente.programa.includes(progAbreviado)) {
+                            nucleoExistente.programa += ` / ${progAbreviado}`;
+                        }
                         nucleoExistente.pacientes.push(novoPaciente);
+                        nucleoExistente.composicao = `${nucleoExistente.pacientes.length} moradores`;
                     } else {
                         dadosNucleos.push({
                             id: Date.now() + Math.random(),
                             sigla: siglaEndereco,
-                            programa: programa,
-                            composicao: `1 morador cadastrado`,
+                            programa: progAbreviado,
+                            composicao: `1 morador`,
                             pacientes: [novoPaciente]
                         });
                     }
                     adicionados++;
+                } else {
+                    ignorados++;
                 }
             });
 
-            if(adicionados > 0) {
-                document.getElementById('inputColaDados').value = '';
-                renderizarTabela();
-                alert(`${adicionados} registro(s) processado(s) e agrupados por endereço com sucesso!`);
-            } else {
-                alert('Formato não reconhecido. Certifique-se de colar as colunas do relatório.');
-            }
+            document.getElementById('inputColaDados').value = '';
+            renderizarTabela();
+            alert(`Importação concluída!\n• ${adicionados} paciente(s) de indicadores adicionados.\n• ${ignorados} registro(s) fora dos indicadores foram subtraídos/ignorados.`);
         }
 
         function abrirModal(idPaciente) {
@@ -409,7 +416,6 @@
             nucleoSelecionado.sigla = document.getElementById('inputEndereco').value;
             pacienteSelecionado.telefone = document.getElementById('inputTelefone').value;
             pacienteSelecionado.condicao = document.getElementById('inputCondicao').value;
-            pacienteSelecionado.perfil = document.getElementById('inputCondicao').value;
             
             const dataVisitaInput = document.getElementById('inputDataVisita').value;
             if(dataVisitaInput) {
@@ -456,7 +462,6 @@
             });
         }
 
-        // Inicialização inicial da tabela
         renderizarTabela();
     </script>
 </body>
