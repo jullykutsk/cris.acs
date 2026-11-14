@@ -280,7 +280,7 @@
                     </div>
                 </div>
 
-                <!-- BLOCO GESTANTE (GES) - COM SEMANAS AUTOMÁTICAS -->
+                <!-- BLOCO GESTANTE (GES) - COM SEMANAS AUTOMÁTICAS E CAMPO TRABALHA -->
                 <div id="bloco-ges" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
                     <span class="font-bold text-emerald-400 block">🔹 Gestante (GES)</span>
                     <div class="grid grid-cols-2 gap-2">
@@ -293,9 +293,15 @@
                             <input type="text" id="edit-risco" placeholder="Ex: Habitual / Alto" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-slate-400">Vacinas (Gestante)</label>
-                        <input type="text" id="edit-vacinas-ges" placeholder="Ex: DTPA em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400">Trabalha?</label>
+                            <input type="text" id="edit-trabalha" placeholder="Ex: Sim / Não" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400">Vacinas (Gestante)</label>
+                            <input type="text" id="edit-vacinas-ges" placeholder="Ex: DTPA em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-slate-400">Suplementos</label>
@@ -412,8 +418,8 @@
             const hoje = new Date();
             const diffTime = hoje - dataConsulta;
             const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-            let semanasBase = 16 + diffWeeks; // Exemplo base inicial
-            if(semanasBase > 42) semanasBase = 40;
+            let semanasBase = 12 + diffWeeks; 
+            if(semanasBase > 40) semanasBase = 40;
             return `${semanasBase} semanas`;
         }
 
@@ -447,10 +453,10 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "24 semanas", risco: "Alto Risco", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
-                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", registrado: true, complemento: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", registrado: false, complemento: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
+                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "24 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
+                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", registrado: true, complemento: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", registrado: false, complemento: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -633,7 +639,6 @@
             
             const progU = (p.programa || "").toUpperCase();
 
-            // Se for gestante, calcula automaticamente caso esteja vazio
             if(progU.includes('GESTA') || progU.includes('GES')) {
                 document.getElementById('edit-semanas').value = p.semanas || calcularSemanasGestante(p.ultimaConsulta);
             } else {
@@ -641,13 +646,13 @@
             }
 
             document.getElementById('edit-risco').value = p.risco || '';
+            document.getElementById('edit-trabalha').value = p.trabalha || '';
             document.getElementById('edit-vacinas-ges').value = p.vacinas || '';
             document.getElementById('edit-vacinas-cr').value = p.vacinas || '';
             document.getElementById('edit-vacinas-id').value = p.vacinas || '';
             document.getElementById('edit-suplementos').value = p.suplementos || '';
             document.getElementById('edit-rede-apoio').value = p.redeApoio || '';
 
-            // HISTÓRICO COM SUBMENU (ACORDEÃO CLICÁVEL)
             const histDiv = document.getElementById('historico-prontuario');
             if(!p.historico || p.historico.length === 0) {
                 histDiv.innerHTML = `<span class="text-slate-500 px-2">Nenhum registro anterior no prontuário.</span>`;
@@ -666,7 +671,6 @@
                 `).join('');
             }
 
-            // MOSTRAR CAMPO RESPONSÁVEL/CUIDADOR APENAS PARA IDOSOS OU CRIANÇAS
             const ehIdosoOuCrianca = progU.includes('IDOSO') || progU.includes('ID') || progU.includes('CRIANÇA') || progU.includes('CR');
             document.getElementById('bloco-resp-cuidador').classList.toggle('hidden', !ehIdosoOuCrianca);
 
@@ -741,6 +745,7 @@
             if (progU.includes('GESTA') || progU.includes('GES')) {
                 p.semanas = document.getElementById('edit-semanas').value;
                 p.risco = document.getElementById('edit-risco').value;
+                p.trabalha = document.getElementById('edit-trabalha').value;
                 p.vacinas = document.getElementById('edit-vacinas-ges').value;
                 p.suplementos = document.getElementById('edit-suplementos').value;
                 p.redeApoio = document.getElementById('edit-rede-apoio').value;
@@ -832,6 +837,7 @@
                     let semAtual = p.semanas || calcularSemanasGestante(p.ultimaConsulta);
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Semanas: <strong>${semAtual}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Risco: <strong>${p.risco || '-'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Trabalha: <strong>${p.trabalha || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas: <strong>${p.vacinas || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Suplementos: <strong>${p.suplementos || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Rede de Apoio: <strong>${p.redeApoio || '-'}</strong></span>`;
@@ -921,7 +927,7 @@
                 agrupado[chave].forEach(p => {
                     let ultimoH = (p.historico && p.historico.length > 0) ? p.historico[0] : {data: '-', motivo: '-', contato: '-'};
                     let progU = (p.programa || "").toUpperCase();
-                    let semRel = progU.includes('GESTA') ? `Sem: ${p.semanas || calcularSemanasGestante(p.ultimaConsulta)}` : '';
+                    let semRel = progU.includes('GESTA') ? `Sem: ${p.semanas || calcularSemanasGestante(p.ultimaConsulta)} | Trabalha: ${p.trabalha || '-'}` : '';
                     let infoExtra = `Glicada: ${p.glicada || '-'} | Insulina: ${p.insulina || '-'} ${semRel} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
                     const progAbrev = formatarProgramaAbreviado(p.programa);
                     html += `
@@ -968,7 +974,7 @@
                             registrado: false,
                             complemento: '',
                             historico: [],
-                            responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
+                            responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', trabalha: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
                         };
                     });
 
