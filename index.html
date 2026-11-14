@@ -3,466 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saúde Comunidade - Controle e Visitas</title>
-    <!-- Tailwind CSS -->
+    <title>Gestão ACS - Microárea</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js para gráficos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1d4ed8',
-                        secondary: '#475569'
-                    }
-                }
-            }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 11px; text-align: left; }
+            th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
         }
-    </script>
+        .print-only { display: none; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased pb-20">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- Topo / Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg">CV</div>
-                <div>
-                    <h1 class="font-bold text-slate-900 leading-tight">Saúde Comunidade</h1>
-                    <p class="text-xs text-slate-500">Controle e Visitas (LGPD Compliant)</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">UMS Umbará II</span>
+    <!-- CABEÇALHO -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-30 flex justify-between items-center shadow-md no-print">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-xl text-white shadow-lg">🩺</div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">Gestão ACS</h1>
+                <p class="text-xs text-slate-400">Sua microárea na palma da mão</p>
             </div>
         </div>
-
-        <!-- Abas de Navegação -->
-        <div class="max-w-4xl mx-auto px-4 flex space-x-6 border-t border-slate-100 text-sm font-medium">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent">Dashboard & Gráficos</button>
-            <button onclick="switchTab('nucleos')" id="tab-nucleos" class="py-3 text-primary border-b-2 border-primary transition-colors">Núcleos Familiares</button>
-            <button onclick="switchTab('relatorios')" id="tab-relatorios" class="py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent">Relatórios & Exames</button>
+        <div class="flex items-center space-x-2">
+            <span class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/30">100% Offline</span>
         </div>
     </header>
 
-    <!-- Conteúdo Principal -->
-    <main class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 pb-24">
 
-        <!-- ABA 1: DASHBOARD -->
-        <section id="content-dashboard" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-500 font-medium">Visitas Realizadas (Mês)</p>
-                    <h3 class="text-2xl font-bold text-slate-900 mt-1">128 / 150</h3>
-                    <span class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded">85% da meta</span>
+        <!-- ABA PACIENTES & DASHBOARD -->
+        <section id="tab-pacientes" class="space-y-4">
+            <!-- CARDS DE RESUMO -->
+            <div class="grid grid-cols-4 gap-2 no-print">
+                <div onclick="filtrarStatus('TODOS')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                    <span id="stat-total" class="block text-xl font-bold text-emerald-400">0</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Total</span>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-500 font-medium">Exames Pendentes</p>
-                    <h3 class="text-2xl font-bold text-amber-600 mt-1">14</h3>
-                    <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded">Requer atenção</span>
+                <div onclick="filtrarStatus('URGENTE')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-red-500 transition">
+                    <span id="stat-urgente" class="block text-xl font-bold text-red-400">0</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Urgente</span>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-500 font-medium">Núcleos com Indicadores</p>
-                    <h3 class="text-2xl font-bold text-slate-900 mt-1" id="totalNucleosCard">2</h3>
-                    <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded">Ativos na área</span>
+                <div onclick="filtrarStatus('ATIVO')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-blue-500 transition">
+                    <span id="stat-ativos" class="block text-xl font-bold text-blue-400">0</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Ativos</span>
+                </div>
+                <div onclick="filtrarStatus('BOLSA')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-purple-500 transition">
+                    <span id="stat-bolsa" class="block text-xl font-bold text-purple-400">0</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Bolsa Fam.</span>
                 </div>
             </div>
 
-            <!-- Gráficos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Volume de Visitas Semanais</h3>
-                    <canvas id="graficoVisitas" height="180"></canvas>
+            <!-- FILTROS DE BUSCA E RUAS -->
+            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col sm:flex-row gap-2 no-print">
+                <input type="text" id="input-busca" oninput="renderizarPacientes()" placeholder="Buscar por nome do usuário..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                <select id="select-rua-filtro" onchange="renderizarPacientes()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <option value="">Todas as Ruas / Endereços</option>
+                </select>
+            </div>
+
+            <!-- LISTA DE PACIENTES -->
+            <div id="lista-pacientes" class="space-y-3">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </section>
+
+        <!-- ABA RELATÓRIOS (A4 IMPRESSÃO) -->
+        <section id="tab-relatorios" class="hidden space-y-4">
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 no-print">
+                <h2 class="font-bold text-lg mb-2">Relatório Oficial para Impressão (A4)</h2>
+                <p class="text-xs text-slate-400 mb-4">Gera a listagem agrupada por núcleo familiar, exibindo apenas as iniciais do endereço e dados essenciais para acompanhamento em campo.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <select id="select-rua-relatorio" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100">
+                        <option value="">Todas as Ruas (Microárea Completa)</option>
+                    </select>
+                    <button onclick="gerarRelatorioA4()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
+                        <span>🖨️ Imprimir / Gerar PDF A4</span>
+                    </button>
                 </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Status de Exames Pendentes</h3>
-                    <canvas id="graficoExames" height="180"></canvas>
+            </div>
+
+            <!-- PREVIEW DO RELATÓRIO A4 -->
+            <div id="container-relatorio-a4" class="bg-white text-slate-900 p-6 rounded-xl shadow-lg print:p-0 print:shadow-none">
+                <div class="text-center border-b border-slate-300 pb-3 mb-4">
+                    <h2 class="text-base font-bold uppercase tracking-wide">Relatório de Acompanhamento da Microárea - ACS</h2>
+                    <p class="text-xs text-slate-600">Atenção Primária à Saúde — Saúde Brasil 360</p>
+                </div>
+                <div id="corpo-tabela-relatorio">
+                    <!-- Tabela dinâmica gerada para impressão -->
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-600">
+                    <p class="font-semibold mb-1">Notas de Campo / Observações:</p>
+                    <div class="h-24 border border-dashed border-slate-300 rounded p-2"></div>
                 </div>
             </div>
         </section>
 
-        <!-- ABA 2: NÚCLEOS FAMILIARES (PRINCIPAL) -->
-        <section id="content-nucleos" class="space-y-4">
-            
-            <!-- Breadcrumb de Navegação em Níveis -->
-            <div id="breadcrumb-container" class="text-xs text-slate-500 font-medium flex items-center space-x-2">
-                <span class="text-primary font-bold">Núcleos Familiares</span>
-            </div>
-
-            <!-- Área de Importação Filtrada por Indicadores -->
-            <div class="bg-white p-4 rounded-xl border border-dashed border-slate-300 shadow-sm space-y-2">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Importação de Relatórios (Filtra apenas HAS, DM, ID, GES, CR)</span>
-                    <span class="text-[11px] text-slate-400">Subtrai dados irrelevantes automaticamente</span>
+        <!-- ABA CONFIGURAÇÕES (IMPORTAR PLANILHA OFICIAL) -->
+        <section id="tab-config" class="hidden space-y-4">
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
+                <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
+                <p class="text-xs text-slate-400">Importe sua planilha contendo as colunas exatas: <strong>Programas, Usuário, Data de Nascimento, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Ativo/Inativo, Bolsa Família</strong> (junto com Exames, Consultas, ECG e MAPA).</p>
+                
+                <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
+                    <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <div class="space-y-2">
+                        <span class="text-3xl">📁</span>
+                        <p class="text-sm font-medium">Clique aqui ou arraste o arquivo CSV/Excel</p>
+                        <p class="text-xs text-slate-500">O app processará instantaneamente 100% offline</p>
+                    </div>
                 </div>
-                <div class="flex flex-col md:flex-row gap-2">
-                    <textarea id="inputColaDados" rows="2" placeholder="Cole aqui as linhas copiadas da planilha de Curitiba..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 bg-slate-50"></textarea>
-                    <button onclick="processarDadosColados()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap">Processar e Filtrar</button>
+
+                <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
+                    <button onclick="carregarDadosExemplo()" class="bg-slate-700 hover:bg-slate-600 text-xs font-semibold px-3 py-2 rounded-lg transition">Carregar Exemplo Prático</button>
+                    <button onclick="limparDados()" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-semibold px-3 py-2 rounded-lg transition">Apagar Todos os Dados</button>
                 </div>
-            </div>
-
-            <!-- Filtros e Busca -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between gap-3">
-                <input type="text" id="searchInput" oninput="filtrarTabela()" placeholder="Buscar por sigla ou programa..." class="w-full md:w-80 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
-                <button onclick="alert('Funcionalidade para cadastrar novo núcleo individualmente.')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">+ Novo Núcleo</button>
-            </div>
-
-            <!-- Tabela Dinâmica -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse" id="tabelaPrincipal">
-                        <thead id="tabelaHead" class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider border-b border-slate-200">
-                            <tr>
-                                <th class="p-3.5 font-semibold">Endereço (Sigla)</th>
-                                <th class="p-3.5 font-semibold">Programa</th>
-                                <th class="p-3.5 font-semibold">Composição Familiar</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaBody" class="divide-y divide-slate-100 text-sm">
-                            <!-- Preenchido via JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ABA 3: RELATÓRIOS -->
-        <section id="content-relatorios" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-center py-12">
-                <h3 class="font-bold text-slate-800 text-lg">Módulo de Relatórios e Indicadores</h3>
-                <p class="text-slate-500 text-sm mt-1">Exportação de dados consolidados e controle de exames gerais da unidade.</p>
-                <button onclick="alert('Relatório exportado com sucesso!')" class="mt-4 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Exportar Relatório PDF</button>
             </div>
         </section>
 
     </main>
 
-    <!-- MODAL DE EDIÇÃO DE PACIENTE E VISITA -->
-    <div id="modalPaciente" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-base">Editar Paciente e Visita</h3>
-                    <p class="text-xs text-slate-500">Gerenciamento de dados e registro de atendimento</p>
-                </div>
-                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
-            </div>
-
-            <div class="space-y-4 text-sm">
-                <!-- Alteração de Dados -->
-                <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                    <h4 class="font-semibold text-slate-700 text-xs uppercase tracking-wider">Dados Cadastrais</h4>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">Endereço (Sigla / Número)</label>
-                        <input type="text" id="inputEndereco" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">Telefone de Contato / Referência</label>
-                        <input type="text" id="inputTelefone" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white" placeholder="(00) 00000-0000">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">Condição / Perfil Clínico</label>
-                        <input type="text" id="inputCondicao" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-                    </div>
-                </div>
-
-                <!-- Registro de Visita Domiciliar -->
-                <div class="space-y-3 bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
-                    <h4 class="font-semibold text-primary text-xs uppercase tracking-wider">Registro de Visita Domiciliar</h4>
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Data da Visita</label>
-                        <input type="date" id="inputDataVisita" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Observações da Visita</label>
-                        <textarea id="inputObsVisita" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white" placeholder="Relato do atendimento, orientações dadas..."></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
-                <button onclick="fecharModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">Cancelar</button>
-                <button onclick="salvarAlteracoes()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700">Salvar Alterações</button>
-            </div>
+    <!-- NAVEGAÇÃO INFERIOR -->
+    <nav class="bg-slate-800 border-t border-slate-700 fixed bottom-0 left-0 right-0 z-30 no-print">
+        <div class="max-w-4xl mx-auto flex justify-around py-2">
+            <button onclick="mudarAba('pacientes')" id="btn-aba-pacientes" class="flex flex-col items-center text-emerald-400 space-y-1">
+                <span class="text-xl">📋</span>
+                <span class="text-[11px] font-medium">Pacientes</span>
+            </button>
+            <button onclick="mudarAba('relatorios')" id="btn-aba-relatorios" class="flex flex-col items-center text-slate-400 space-y-1 hover:text-slate-200">
+                <span class="text-xl">📝</span>
+                <span class="text-[11px] font-medium">Relatórios</span>
+            </button>
+            <button onclick="mudarAba('config')" id="btn-aba-config" class="flex flex-col items-center text-slate-400 space-y-1 hover:text-slate-200">
+                <span class="text-xl">⚙️</span>
+                <span class="text-[11px] font-medium">Configurar</span>
+            </button>
         </div>
-    </div>
+    </nav>
 
-    <!-- Lógica JavaScript -->
+    <!-- SCRIPT DE LÓGICA -->
     <script>
-        // Banco de Dados Simulado
-        let dadosNucleos = [
-            {
-                id: 1,
-                sigla: 'EPR-5385',
-                programa: 'CR / HAS',
-                composicao: '2 moradores',
-                pacientes: [
-                    { id: 101, perfil: 'CR: CRIANCA NORMAL / ROTINA', ultimaVisita: '12/06/2026', telefone: '(41) 99888-1111', condicao: 'Criança Normal' },
-                    { id: 102, perfil: 'HAS: RISCO INTERMEDIÁRIO', ultimaVisita: '04/05/2026', telefone: '(41) 99888-2222', condicao: 'Hipertenso Risco Intermediário' }
-                ]
-            }
-        ];
+        let pacientes = JSON.parse(localStorage.getItem('acs_pacientes_oficial')) || [];
+        let filtroAtualStatus = 'TODOS';
 
-        let nivelAtual = 'nucleos';
-        let nucleoSelecionado = null;
-        let pacienteSelecionado = null;
-
-        function switchTab(tab) {
-            document.getElementById('content-dashboard').classList.add('hidden');
-            document.getElementById('content-nucleos').classList.add('hidden');
-            document.getElementById('content-relatorios').classList.add('hidden');
-
-            document.getElementById('tab-dashboard').className = 'py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent';
-            document.getElementById('tab-nucleos').className = 'py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent';
-            document.getElementById('tab-relatorios').className = 'py-3 text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent';
-
-            document.getElementById('content-' + tab).classList.remove('hidden');
-            document.getElementById('tab-' + tab).className = 'py-3 text-primary border-b-2 border-primary transition-colors font-medium';
-
-            if(tab === 'dashboard') initCharts();
+        // Dados de exemplo caso esteja vazio
+        if (pacientes.length === 0) {
+            pacientes = [
+                { id: 1, programa: "Hipertensos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "R. das Flores", numero: "120", ultimaConsulta: "10/01/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
+                { id: 2, programa: "Hipertensos / Diabéticos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "Av. Brasil", numero: "45", ultimaConsulta: "05/11/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
+                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "R. Projetada", numero: "12", ultimaConsulta: "18/02/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
+                { id: 4, programa: "Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "R. das Flores", numero: "122", ultimaConsulta: "12/12/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
+            ];
+            localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
 
-        function renderizarTabela() {
-            const tbody = document.getElementById('tabelaBody');
-            const thead = document.getElementById('tabelaHead');
-            const breadcrumb = document.getElementById('breadcrumb-container');
-            document.getElementById('totalNucleosCard').innerText = dadosNucleos.length;
-            tbody.innerHTML = '';
-
-            if (nivelAtual === 'nucleos') {
-                breadcrumb.innerHTML = `<span class="text-primary font-bold">Núcleos Familiares (Filtrado por Indicadores)</span>`;
-                thead.innerHTML = `
-                    <tr>
-                        <th class="p-3.5 font-semibold">Endereço (Sigla)</th>
-                        <th class="p-3.5 font-semibold">Programa</th>
-                        <th class="p-3.5 font-semibold">Composição Familiar</th>
-                    </tr>
-                `;
-
-                dadosNucleos.forEach(n => {
-                    let tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50 cursor-pointer transition-colors';
-                    tr.onclick = () => abrirPacientes(n.id);
-                    tr.innerHTML = `
-                        <td class="p-3.5 font-bold text-primary">${n.sigla}</td>
-                        <td class="p-3.5 text-slate-700">${n.programa}</td>
-                        <td class="p-3.5 text-slate-500">${n.composicao}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-            } else if (nivelAtual === 'pacientes') {
-                breadcrumb.innerHTML = `
-                    <button onclick="voltarNucleos()" class="text-slate-500 hover:underline">Núcleos Familiares</button>
-                    <span>/</span>
-                    <span class="text-primary font-bold">Núcleo: ${nucleoSelecionado.sigla} (${nucleoSelecionado.programa})</span>
-                `;
-                thead.innerHTML = `
-                    <tr>
-                        <th class="p-3.5 font-semibold">Condição / Perfil</th>
-                        <th class="p-3.5 font-semibold">Última Visita</th>
-                        <th class="p-3.5 font-semibold text-right">Ações / Editar</th>
-                    </tr>
-                `;
-
-                nucleoSelecionado.pacientes.forEach(p => {
-                    let tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50 transition-colors';
-                    tr.innerHTML = `
-                        <td class="p-3.5 font-medium text-slate-800"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs">${p.perfil}</span></td>
-                        <td class="p-3.5 text-slate-600">${p.ultimaVisita}</td>
-                        <td class="p-3.5 text-right">
-                            <button onclick='abrirModal(${p.id})' class="bg-blue-50 text-primary px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">Editar Paciente</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
+        function mudarAba(aba) {
+            ['pacientes', 'relatorios', 'config'].forEach(a => {
+                document.getElementById(`tab-${a}`).classList.add('hidden');
+                document.getElementById(`btn-aba-${a}`).classList.remove('text-emerald-400');
+                document.getElementById(`btn-aba-${a}`).classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${aba}`).classList.remove('hidden');
+            document.getElementById(`btn-aba-${aba}`).classList.remove('text-slate-400');
+            document.getElementById(`btn-aba-${aba}`).classList.add('text-emerald-400');
+            if(aba === 'relatorios') construirTabelaRelatorioA4();
         }
 
-        function abrirPacientes(idNucleo) {
-            nucleoSelecionado = dadosNucleos.find(n => n.id === idNucleo);
-            nivelAtual = 'pacientes';
-            renderizarTabela();
+        function atualizarEstatisticas() {
+            document.getElementById('stat-total').innerText = pacientes.length;
+            document.getElementById('stat-urgente').innerText = pacientes.filter(p => p.ecg === 'Pendente' || p.mapa === 'Pendente').length;
+            document.getElementById('stat-ativos').innerText = pacientes.filter(p => p.status === 'Ativo').length;
+            document.getElementById('stat-bolsa').innerText = pacientes.filter(p => p.bolsaFamilia === 'Sim').length;
         }
 
-        function voltarNucleos() {
-            nivelAtual = 'nucleos';
-            nucleoSelecionado = null;
-            renderizarTabela();
-        }
-
-        function filtrarTabela() {
-            if (nivelAtual !== 'nucleos') return;
-            const termo = document.getElementById('searchInput').value.toLowerCase();
-            const tbody = document.getElementById('tabelaBody');
-            tbody.innerHTML = '';
-
-            const filtrados = dadosNucleos.filter(n => 
-                n.sigla.toLowerCase().includes(termo) || n.programa.toLowerCase().includes(termo)
-            );
-
-            filtrados.forEach(n => {
-                let tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 cursor-pointer transition-colors';
-                tr.onclick = () => abrirPacientes(n.id);
-                tr.innerHTML = `
-                    <td class="p-3.5 font-bold text-primary">${n.sigla}</td>
-                    <td class="p-3.5 text-slate-700">${n.programa}</td>
-                    <td class="p-3.5 text-slate-500">${n.composicao}</td>
-                `;
-                tbody.appendChild(tr);
+        function popularFiltroRuas() {
+            const ruas = [...new Set(pacientes.map(p => p.endereco))];
+            ['select-rua-filtro', 'select-rua-relatorio'].forEach(id => {
+                const sel = document.getElementById(id);
+                const atual = sel.value;
+                sel.innerHTML = `<option value="">Todas as Ruas / Endereços</option>` + ruas.map(r => `<option value="${r}">${r}</option>`).join('');
+                sel.value = atual;
             });
         }
 
-        function processarDadosColados() {
-            const texto = document.getElementById('inputColaDados').value.trim();
-            if (!texto) {
-                alert('Por favor, cole os dados antes de processar.');
+        function filtrarStatus(status) {
+            filtroAtualStatus = status;
+            renderizarPacientes();
+        }
+
+        function renderizarPacientes() {
+            atualizarEstatisticas();
+            popularFiltroRuas();
+
+            const busca = document.getElementById('input-busca').value.toLowerCase();
+            const ruaFiltro = document.getElementById('select-rua-filtro').value;
+            const listaDiv = document.getElementById('lista-pacientes');
+
+            let filtrados = pacientes.filter(p => {
+                const matchBusca = p.nome.toLowerCase().includes(busca);
+                const matchRua = !ruaFiltro || p.endereco === ruaFiltro;
+                let matchStatus = true;
+                if(filtroAtualStatus === 'URGENTE') matchStatus = (p.ecg === 'Pendente' || p.mapa === 'Pendente');
+                if(filtroAtualStatus === 'ATIVO') matchStatus = (p.status === 'Ativo');
+                if(filtroAtualStatus === 'BOLSA') matchStatus = (p.bolsaFamilia === 'Sim');
+                return matchBusca && matchRua && matchStatus;
+            });
+
+            if(filtrados.length === 0) {
+                listaDiv.innerHTML = `<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-slate-400 text-sm">Nenhum paciente encontrado.</div>`;
                 return;
             }
 
-            const linhas = texto.split('\n');
-            let adicionados = 0;
-            let ignorados = 0;
+            listaDiv.innerHTML = filtrados.map(p => `
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${p.programa}</span>
+                            <h3 class="font-bold text-base text-slate-100">${p.nome}</h3>
+                        </div>
+                        <span class="text-xs px-2 py-0.5 rounded font-medium ${p.status === 'Ativo' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}">${p.status}</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
+                        <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo}</div>
+                        <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero}</div>
+                        <div><span class="text-slate-500 block">Últ. Consulta:</span> ${p.ultimaConsulta}</div>
+                        <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia}</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
+                        <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Próx. Exame: <strong>${p.proximoExame}</strong></span>
+                        <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Próx. Consulta: <strong>${p.proximaConsulta}</strong></span>
+                        <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">ECG: <strong class="${p.ecg === 'Pendente' ? 'text-red-400' : 'text-emerald-400'}">${p.ecg}</strong></span>
+                        <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">MAPA: <strong class="${p.mapa === 'Pendente' ? 'text-red-400' : 'text-emerald-400'}">${p.mapa}</strong></span>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-            linhas.forEach(linha => {
-                const partes = linha.includes('|') ? linha.split('|').map(p => p.trim()) : linha.split('\t').map(p => p.trim());
-                
-                if(partes.length >= 3) {
-                    let progOriginal = partes[0].toUpperCase();
-                    let perfilClinico = partes[1];
-                    let enderecoCompleto = partes.length > 6 ? partes[6] : "";
-                    let numeroCasa = partes.length > 7 ? partes[7] : "00";
+        function construirTabelaRelatorioA4() {
+            const ruaFiltro = document.getElementById('select-rua-relatorio').value;
+            const container = document.getElementById('corpo-tabela-relatorio');
 
-                    // Validação estrita: apenas indicadores permitidos (HAS, DM, ID, GES, CR)
-                    let progAbreviado = '';
-                    if (progOriginal.includes('HIPERTENSO')) progAbreviado = 'HAS';
-                    else if (progOriginal.includes('DIABETICO')) progAbreviado = 'DM';
-                    else if (progOriginal.includes('IDOSO')) progAbreviado = 'ID';
-                    else if (progOriginal.includes('MULHER') || progOriginal.includes('GESTA') || progOriginal.includes('CLIMATERIO')) progAbreviado = 'GES';
-                    else if (progOriginal.includes('CRIANCA')) progAbreviado = 'CR';
+            let filtrados = pacientes.filter(p => !ruaFiltro || p.endereco === ruaFiltro);
 
-                    // Se não for nenhum dos indicadores oficiais, subtrai/ignora o registro
-                    if (!progAbreviado || !enderecoCompleto) {
-                        ignorados++;
-                        return;
-                    }
-
-                    // Gera sigla do endereço (LGPD)
-                    let siglaEndereco = enderecoCompleto.replace(/RUA|AVENIDA|ALAMEDA|TRAVESSA/gi, '')
-                        .trim()
-                        .split(' ')
-                        .map(w => w[0])
-                        .join('')
-                        .toUpperCase() + '-' + numeroCasa;
-
-                    let nucleoExistente = dadosNucleos.find(n => n.sigla === siglaEndereco);
-
-                    let novoPaciente = {
-                        id: Date.now() + Math.random(),
-                        perfil: `${progAbreviado}: ${perfilClinico}`,
-                        ultimaVisita: 'Pendente',
-                        telefone: '(41) 90000-0000',
-                        condicao: perfilClinico
-                    };
-
-                    if (nucleoExistente) {
-                        if(!nucleoExistente.programa.includes(progAbreviado)) {
-                            nucleoExistente.programa += ` / ${progAbreviado}`;
-                        }
-                        nucleoExistente.pacientes.push(novoPaciente);
-                        nucleoExistente.composicao = `${nucleoExistente.pacientes.length} moradores`;
-                    } else {
-                        dadosNucleos.push({
-                            id: Date.now() + Math.random(),
-                            sigla: siglaEndereco,
-                            programa: progAbreviado,
-                            composicao: `1 morador`,
-                            pacientes: [novoPaciente]
-                        });
-                    }
-                    adicionados++;
-                } else {
-                    ignorados++;
-                }
+            // Agrupar por Endereço / Família
+            let agrupado = {};
+            filtrados.forEach(p => {
+                let chave = `${p.endereco}, Nº ${p.numero}`;
+                if(!agrupado[chave]) agrupado[chave] = [];
+                agrupado[chave].push(p);
             });
 
-            document.getElementById('inputColaDados').value = '';
-            renderizarTabela();
-            alert(`Importação concluída!\n• ${adicionados} paciente(s) de indicadores adicionados.\n• ${ignorados} registro(s) fora dos indicadores foram subtraídos/ignorados.`);
-        }
-
-        function abrirModal(idPaciente) {
-            pacienteSelecionado = nucleoSelecionado.pacientes.find(p => p.id === idPaciente);
-            
-            document.getElementById('inputEndereco').value = nucleoSelecionado.sigla;
-            document.getElementById('inputTelefone').value = pacienteSelecionado.telefone;
-            document.getElementById('inputCondicao').value = pacienteSelecionado.condicao;
-            document.getElementById('inputDataVisita').value = new Date().toISOString().split('T')[0];
-            document.getElementById('inputObsVisita').value = '';
-
-            document.getElementById('modalPaciente').classList.remove('hidden');
-            document.getElementById('modalPaciente').classList.add('flex');
-        }
-
-        function fecharModal() {
-            document.getElementById('modalPaciente').classList.remove('flex');
-            document.getElementById('modalPaciente').classList.add('hidden');
-        }
-
-        function salvarAlteracoes() {
-            nucleoSelecionado.sigla = document.getElementById('inputEndereco').value;
-            pacienteSelecionado.telefone = document.getElementById('inputTelefone').value;
-            pacienteSelecionado.condicao = document.getElementById('inputCondicao').value;
-            
-            const dataVisitaInput = document.getElementById('inputDataVisita').value;
-            if(dataVisitaInput) {
-                const partes = dataVisitaInput.split('-');
-                pacienteSelecionado.ultimaVisita = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            if(Object.keys(agrupado).length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nenhum dado para exibir no relatório.</p>`;
+                return;
             }
 
-            fecharModal();
-            renderizarTabela();
-            alert('Dados e visita atualizados com sucesso!');
+            let html = '';
+            for(let endereco in agrupado) {
+                // Iniciais do endereço para privacidade máxima na impressão
+                let iniciaisEnd = endereco.split(' ').map(w => w[0]).join('').toUpperCase() + '...';
+                
+                html += `
+                    <div class="mb-4">
+                        <div class="bg-slate-100 font-bold text-xs p-1.5 border border-slate-300">Endereço (Ref): ${iniciaisEnd}</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome Usuário</th>
+                                    <th>Programa</th>
+                                    <th>Próx. Exame</th>
+                                    <th>Próx. Consulta</th>
+                                    <th>ECG / MAPA</th>
+                                    <th>Observações / Anotações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                agrupado[endereco].forEach(p => {
+                    html += `
+                        <tr>
+                            <td class="font-medium">${p.nome}</td>
+                            <td>${p.programa}</td>
+                            <td>${p.proximoExame}</td>
+                            <td>${p.proximaConsulta}</td>
+                            <td>${p.ecg} / ${p.mapa}</td>
+                            <td class="w-32"></td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table></div>`;
+            }
+            container.innerHTML = html;
         }
 
-        let chartsInitialized = false;
-        function initCharts() {
-            if(chartsInitialized) return;
-            chartsInitialized = true;
+        document.getElementById('select-rua-relatorio').addEventListener('change', construirTabelaRelatorioA4);
 
-            new Chart(document.getElementById('graficoVisitas'), {
-                type: 'line',
-                data: {
-                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-                    datasets: [{
-                        label: 'Visitas Realizadas',
-                        data: [25, 32, 40, 31],
-                        borderColor: '#1d4ed8',
-                        backgroundColor: 'rgba(29, 78, 216, 0.05)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
+        function gerarRelatorioA4() {
+            window.print();
+        }
 
-            new Chart(document.getElementById('graficoExames'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Aguardando Agendamento', 'Solicitados', 'Realizados'],
-                    datasets: [{
-                        data: [5, 9, 30],
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981']
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+        function importarPlanilha(event) {
+            const arquivo = event.target.files[0];
+            if(!arquivo) return;
+
+            Papa.parse(arquivo, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const dados = results.data;
+                    pacientes = dados.map((row, idx) => ({
+                        id: idx + 1,
+                        programa: row['Programas'] || row['programa'] || 'Geral',
+                        nome: row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido',
+                        idade: row['Idade'] || row['idade'] || 0,
+                        sexo: row['Sexo'] || row['sexo'] || 'F',
+                        endereco: row['Endereço'] || row['endereco'] || 'Rua Principal',
+                        numero: row['Nº'] || row['numero'] || 'S/N',
+                        ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
+                        status: row['nativo, inativo'] || row['status'] || 'Ativo',
+                        bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
+                        proximoExame: row['Próximo Exame'] || 'Pendente',
+                        proximaConsulta: row['Próxima Consulta'] || 'Pendente',
+                        ecg: row['ECG'] || 'Pendente',
+                        mapa: row['MAPA'] || 'Pendente'
+                    }));
+
+                    localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+                    alert(`Sucesso! ${pacientes.length} registros importados da planilha oficial.`);
+                    mudarAba('pacientes');
+                    renderizarPacientes();
+                }
             });
         }
 
-        renderizarTabela();
+        function carregarDadosExemplo() {
+            localStorage.removeItem('acs_pacientes_oficial');
+            location.reload();
+        }
+
+        function limparDados() {
+            if(confirm('Tem certeza que deseja apagar todos os registros?')) {
+                pacientes = [];
+                localStorage.removeItem('acs_pacientes_oficial');
+                renderizarPacientes();
+            }
+        }
+
+        // Inicialização
+        renderizarPacientes();
     </script>
 </body>
 </html>
