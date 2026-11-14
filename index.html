@@ -61,7 +61,7 @@
                 </div>
             </div>
 
-            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS (SEM A PALAVRA PROGRAMAS) -->
+            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS -->
             <div class="flex flex-wrap gap-1.5 no-print items-center bg-slate-800/60 p-2 rounded-xl border border-slate-700/80">
                 <button onclick="filtrarPrograma('TODOS')" id="btn-prog-TODOS" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">Todos</button>
                 <button onclick="filtrarPrograma('DM')" id="btn-prog-DM" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">DM</button>
@@ -216,7 +216,6 @@
 
     <!-- SCRIPT DE LÓGICA -->
     <script>
-        // Iniciais sem o "R" inicial (ex: AM, PBB, NB, EP...)
         const BLOCOS_RUAS = {
             1: [
                 { nome: "RUA ANTONIO MATHEUS", iniciais: "AM" },
@@ -266,12 +265,23 @@
             return 'Ativo';
         }
 
+        // Função para converter o endereço completo importado em iniciais automaticamente
+        function formatarEnderecoParaIniciais(nomeRua) {
+            if(!nomeRua) return 'RUA';
+            const limpo = nomeRua.trim().toUpperCase();
+            for(let b in BLOCOS_RUAS) {
+                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === limpo || limpo.includes(r.nome.toUpperCase()));
+                if(achado) return achado.iniciais;
+            }
+            return limpo; // Se não achar na lista, retorna o original limpo
+        }
+
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos / Idosos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "RUA EDUARDO PINTO DA ROCHA", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
-                { id: 2, programa: "Hipertensos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "RUA PAULO ESTEPHANO CAVICHIOLO", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
-                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "RUA ANGELO GAI", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
-                { id: 4, programa: "Crianças / Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "RUA ANTONIO MATHEUS", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
+                { id: 1, programa: "Hipertensos / Diabéticos / Idosos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
+                { id: 2, programa: "Hipertensos", nome: "Rosa A. P.", idade: 81, sexo: "F", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
+                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
+                { id: 4, programa: "Crianças / Idosos", nome: "João F. S.", idade: 65, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -395,7 +405,7 @@
 
         function obterIniciaisPorNome(nomeRua) {
             for(let b in BLOCOS_RUAS) {
-                const achado = BLOCOS_RUAS[b].find(r => r.nome === nomeRua);
+                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === nomeRua.toUpperCase());
                 if(achado) return achado.iniciais;
             }
             return nomeRua;
@@ -435,7 +445,7 @@
 
             let filtrados = pacientes.filter(p => {
                 const matchBusca = p.nome.toLowerCase().includes(busca);
-                const endNorm = p.endereco.trim().toUpperCase();
+                const endNorm = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
                 const matchRua = ruasSelecionadasPac.size === 0 || ruasSelecionadasPac.has(endNorm);
                 
                 const stVisita = avaliarStatusVisita(p);
@@ -505,13 +515,13 @@
         function construirTabelaRelatorioA4() {
             const container = document.getElementById('corpo-tabela-relatorio');
             let filtrados = pacientes.filter(p => {
-                const endNorm = p.endereco.trim().toUpperCase();
+                const endNorm = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
                 return ruasSelecionadasRel.size === 0 || ruasSelecionadasRel.has(endNorm);
             });
 
             let agrupado = {};
             filtrados.forEach(p => {
-                let chave = `${p.endereco.trim().toUpperCase()}|${p.numero}`;
+                let chave = `${(p.enderecoOriginal || p.endereco).trim().toUpperCase()}|${p.numero}`;
                 if(!agrupado[chave]) agrupado[chave] = [];
                 agrupado[chave].push(p);
             });
@@ -570,24 +580,28 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     const dados = results.data;
-                    pacientes = dados.map((row, idx) => ({
-                        id: idx + 1,
-                        programa: row['Programas'] || row['programa'] || 'Geral',
-                        nome: row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido',
-                        idade: row['Idade'] || row['idade'] || 0,
-                        sexo: row['Sexo'] || row['sexo'] || 'F',
-                        endereco: (row['Endereço'] || row['endereco'] || 'Rua Principal').toUpperCase(),
-                        numero: row['Nº'] || row['numero'] || 'S/N',
-                        ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
-                        bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
-                        proximoExame: row['Próximo Exame'] || 'Pendente',
-                        proximaConsulta: row['Próxima Consulta'] || 'Pendente',
-                        ecg: row['ECG'] || 'Pendente',
-                        mapa: row['MAPA'] || 'Pendente'
-                    }));
+                    pacientes = dados.map((row, idx) => {
+                        const ruaOriginal = (row['Endereço'] || row['endereco'] || 'Rua Principal').trim();
+                        return {
+                            id: idx + 1,
+                            programa: row['Programas'] || row['programa'] || 'Geral',
+                            nome: row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido',
+                            idade: row['Idade'] || row['idade'] || 0,
+                            sexo: row['Sexo'] || row['sexo'] || 'F',
+                            enderecoOriginal: ruaOriginal.toUpperCase(),
+                            endereco: formatarEnderecoParaIniciais(ruaOriginal), // Converte automaticamente para iniciais
+                            numero: row['Nº'] || row['numero'] || 'S/N',
+                            ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
+                            bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
+                            proximoExame: row['Próximo Exame'] || 'Pendente',
+                            proximaConsulta: row['Próxima Consulta'] || 'Pendente',
+                            ecg: row['ECG'] || 'Pendente',
+                            mapa: row['MAPA'] || 'Pendente'
+                        };
+                    });
 
                     localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
-                    alert(`Sucesso! ${pacientes.length} registros importados.`);
+                    alert(`Sucesso! ${pacientes.length} registros importados com conversão segura de endereços.`);
                     mudarAba('pacientes');
                     renderizarPacientes();
                 }
