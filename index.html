@@ -69,6 +69,7 @@
                 <button onclick="filtrarPrograma('GES')" id="btn-prog-GES" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">GES</button>
                 <button onclick="filtrarPrograma('CR')" id="btn-prog-CR" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">CR</button>
                 <button onclick="filtrarPrograma('ID')" id="btn-prog-ID" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">ID</button>
+                <button onclick="filtrarPrograma('BLSA')" id="btn-prog-BLSA" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">BLSA</button>
                 <button onclick="filtrarPrograma('TAB')" id="btn-prog-TAB" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600/70 text-amber-200 hover:bg-amber-600 transition">🚬 TAB/ÁLC</button>
                 <button onclick="filtrarPrograma('COMPLEXOS')" id="btn-prog-COMPLEXOS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-600/70 text-purple-200 hover:bg-purple-600 transition">🧠 Complexos</button>
             </div>
@@ -121,20 +122,20 @@
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
                     <div>
                         <h2 class="font-bold text-base text-emerald-400">📊 Painel Quantitativo da Microárea</h2>
-                        <p class="text-xs text-slate-400">Resumo estatístico por programas e distribuição geográfica por ruas.</p>
+                        <p class="text-xs text-slate-400">Toque em qualquer programa ou rua para ver os pacientes correspondentes.</p>
                     </div>
                     <button onclick="gerarRelatorioA4()" class="bg-slate-700 hover:bg-slate-600 text-xs font-semibold px-3 py-2 rounded-lg transition no-print">🖨️ Imprimir Resumo</button>
                 </div>
 
                 <!-- TABELA 1: QUANTITATIVO POR PROGRAMAS -->
                 <div class="space-y-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">1. Quantitativo por Programas e Dependências</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">1. Quantitativo por Programas e Dependências (Toque para filtrar)</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-900 text-slate-400 border-b border-slate-700">
                                     <th class="p-2.5">Programa / Categoria</th>
-                                    <th class="p-2.5 text-center">Total Cadastrados</th>
+                                    <th class="p-2.5 text-center">Total</th>
                                     <th class="p-2.5 text-center">Ativos</th>
                                     <th class="p-2.5 text-center">Urgentes</th>
                                     <th class="p-2.5 text-center">Inativos</th>
@@ -149,7 +150,7 @@
 
                 <!-- TABELA 2: PACIENTES POR RUAS -->
                 <div class="space-y-2 pt-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">2. Quantitativo de Pacientes por Ruas</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">2. Quantitativo de Pacientes por Ruas (Toque para filtrar)</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -314,7 +315,7 @@
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Outras Drogas" class="chk-tab accent-amber-500"> <span>Outras Dependências</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Em Tratamento/CAPS" class="chk-tab accent-amber-500"> <span>Em Tratamento (CAPS)</span></label>
                         </div>
-                        <input type="text" id="edit-tab-obs" placeholder="Detalhes (ex: Em cessação de tabagismo, faz acompanhamento...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mt-1">
+                        <input type="text" id="edit-tab-obs" placeholder="Detalhes (ex: Em cessação de tabagismo...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mt-1">
                     </div>
                 </div>
 
@@ -339,7 +340,7 @@
                     </div>
                 </div>
 
-                <!-- RESPONSÁVEL E CUIDADOR (APARECE APENAS PARA IDOSOS OU CRIANÇAS) -->
+                <!-- RESPONSÁVEL E CUIDADOR -->
                 <div id="bloco-resp-cuidador" class="grid grid-cols-2 gap-2 pt-2">
                     <div>
                         <label class="block text-slate-400 font-semibold mb-1">Responsável</label>
@@ -394,7 +395,7 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-slate-400">Semanas (Automático / Editável)</label>
+                            <label class="block text-slate-400">Semanas</label>
                             <input type="text" id="edit-semanas" oninput="checarAvisoVacinaModal()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-bold text-emerald-400">
                         </div>
                         <div>
@@ -435,7 +436,7 @@
                     <label class="block text-slate-400">Vacinas (Idoso)</label>
                     <input type="text" id="edit-vacinas-id" placeholder="Ex: Influenza em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mb-2">
                     
-                    <label class="block text-slate-400 font-semibold">Avaliação de Ambiente (Marque o que se aplica):</label>
+                    <label class="block text-slate-400 font-semibold">Avaliação de Ambiente:</label>
                     <div class="grid grid-cols-1 gap-1.5 pt-1 text-slate-300">
                         <label class="flex items-center space-x-2"><input type="checkbox" id="amb-1" class="accent-emerald-500"> <span>Risco de Quedas / Sem tapete antiderrapante</span></label>
                         <label class="flex items-center space-x-2"><input type="checkbox" id="amb-2" class="accent-emerald-500"> <span>Boa iluminação nos cômodos</span></label>
@@ -586,9 +587,9 @@
         if (pacientes.length === 0) {
             pacientes = [
                 { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "2026-01-10", periodo: "Manhã", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", complexo: true, complexoTipos: "Acamado | Deficiência Visual", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "2025-10-15", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", complexo: false, complexoTipos: "", tabagismo: true, tabagismoTipos: "Tabagismo", tabagismoObs: "Fumante moderada, orientada no pré-natal", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "20 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "2025-10-15", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", complexo: false, complexoTipos: "", tabagismo: true, tabagismoTipos: "Tabagismo", tabagismoObs: "Fumante moderada", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "20 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
                 { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "2025-05-05", periodo: "Manhã", bolsaFamilia: "Não", registrado: true, complemento: "", complexo: false, complexoTipos: "", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", periodo: "Manhã", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "2025-12-12", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "", complexo: true, complexoTipos: "TEA (Autismo)", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", periodo: "Tarde", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "2025-12-12", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "", complexo: true, complexoTipos: "TEA (Autismo)", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", periodo: "Tarde", motivo: "Busca ativa vacinação", contato: "Cartão verificado"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -622,7 +623,7 @@
 
         function filtrarPrograma(prog) {
             filtroAtualPrograma = prog;
-            ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'BLSA', 'ID', 'TAB', 'COMPLEXOS'].forEach(p => {
+            ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'ID', 'BLSA', 'TAB', 'COMPLEXOS'].forEach(p => {
                 const btn = document.getElementById(`btn-prog-${p}`);
                 if(btn) {
                     if(p === prog) {
@@ -632,6 +633,21 @@
                     }
                 }
             });
+            renderizarPacientes();
+        }
+
+        // Função ao clicar em uma linha do programa no Painel Quantitativo
+        function filtrarPorPainelPrograma(chaveProg) {
+            mudarAba('pacientes');
+            filtrarPrograma(chaveProg);
+        }
+
+        // Função ao clicar em uma rua no Painel Quantitativo
+        function filtrarPorPainelRua(nomeRua) {
+            mudarAba('pacientes');
+            ruasSelecionadasPac.clear();
+            ruasSelecionadasPac.add(nomeRua);
+            atualizarBadgesETags();
             renderizarPacientes();
         }
 
@@ -792,7 +808,6 @@
             document.getElementById('edit-periodo').value = p.periodo || 'Manhã';
             document.getElementById('edit-complemento').value = p.complemento || '';
             
-            // Complexo
             const isComplexo = !!p.complexo;
             document.getElementById('edit-complexo').checked = isComplexo;
             document.getElementById('detalhes-complexo-div').classList.toggle('hidden', !isComplexo);
@@ -801,7 +816,6 @@
                 chk.checked = (p.complexoTipos || "").includes(chk.value);
             });
 
-            // Tabagismo / Álcool
             const isTab = !!p.tabagismo;
             document.getElementById('edit-tabagismo').checked = isTab;
             document.getElementById('detalhes-tabagismo-div').classList.toggle('hidden', !isTab);
@@ -902,7 +916,6 @@
             p.periodo = periodoSelecionado;
             p.complemento = document.getElementById('edit-complemento').value.trim();
 
-            // Salvar Complexo
             const isComplexo = document.getElementById('edit-complexo').checked;
             p.complexo = isComplexo;
             if(isComplexo) {
@@ -917,7 +930,6 @@
                 p.complexoObs = '';
             }
 
-            // Salvar Tabagismo / Álcool
             const isTab = document.getElementById('edit-tabagismo').checked;
             p.tabagismo = isTab;
             if(isTab) {
@@ -1155,8 +1167,8 @@
                 const inativos = filtrados.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
 
                 return `
-                    <tr class="hover:bg-slate-700/50">
-                        <td class="p-2.5 font-semibold text-slate-200">${cat.nome}</td>
+                    <tr onclick="filtrarPorPainelPrograma('${cat.chave}')" class="hover:bg-slate-700/80 cursor-pointer transition">
+                        <td class="p-2.5 font-semibold text-emerald-300 underline">${cat.nome}</td>
                         <td class="p-2.5 text-center font-bold text-emerald-400">${total}</td>
                         <td class="p-2.5 text-center text-blue-400">${ativos}</td>
                         <td class="p-2.5 text-center text-red-400">${urgentes}</td>
@@ -1176,8 +1188,8 @@
             for(let r in contagemRuas) {
                 let sigla = obterIniciaisPorNome(r);
                 ruasHtml += `
-                    <tr class="hover:bg-slate-700/50">
-                        <td class="p-2.5 text-slate-200">${r}</td>
+                    <tr onclick="filtrarPorPainelRua('${r}')" class="hover:bg-slate-700/80 cursor-pointer transition">
+                        <td class="p-2.5 font-medium text-emerald-300 underline">${r}</td>
                         <td class="p-2.5 text-center font-bold text-emerald-400">${sigla}</td>
                         <td class="p-2.5 text-center font-semibold text-slate-100">${contagemRuas[r]}</td>
                     </tr>
