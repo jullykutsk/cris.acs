@@ -61,15 +61,16 @@
                 </div>
             </div>
 
-            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS -->
+            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS + TABAGISMO/ÁLCOOL + COMPLEXOS -->
             <div class="flex flex-wrap gap-1.5 no-print items-center bg-slate-800/60 p-2 rounded-xl border border-slate-700/80">
                 <button onclick="filtrarPrograma('TODOS')" id="btn-prog-TODOS" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">Todos</button>
                 <button onclick="filtrarPrograma('DM')" id="btn-prog-DM" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">DM</button>
                 <button onclick="filtrarPrograma('HAS')" id="btn-prog-HAS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">HAS</button>
                 <button onclick="filtrarPrograma('GES')" id="btn-prog-GES" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">GES</button>
                 <button onclick="filtrarPrograma('CR')" id="btn-prog-CR" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">CR</button>
-                <button onclick="filtrarPrograma('BLSA')" id="btn-prog-BLSA" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">BLSA</button>
                 <button onclick="filtrarPrograma('ID')" id="btn-prog-ID" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">ID</button>
+                <button onclick="filtrarPrograma('TAB')" id="btn-prog-TAB" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600/70 text-amber-200 hover:bg-amber-600 transition">🚬 TAB/ÁLC</button>
+                <button onclick="filtrarPrograma('COMPLEXOS')" id="btn-prog-COMPLEXOS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-600/70 text-purple-200 hover:bg-purple-600 transition">🧠 Complexos</button>
             </div>
 
             <!-- BUSCA E OS 3 SUBMENUS DE BLOCOS COM MÚLTIPLA ESCOLHA -->
@@ -112,6 +113,59 @@
 
             <!-- LISTA DE PACIENTES -->
             <div id="lista-pacientes" class="space-y-3"></div>
+        </section>
+
+        <!-- ABA QUANTITATIVO / PAINEL -->
+        <section id="tab-quantitativo" class="hidden space-y-4">
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-base text-emerald-400">📊 Painel Quantitativo da Microárea</h2>
+                        <p class="text-xs text-slate-400">Resumo estatístico por programas e distribuição geográfica por ruas.</p>
+                    </div>
+                    <button onclick="gerarRelatorioA4()" class="bg-slate-700 hover:bg-slate-600 text-xs font-semibold px-3 py-2 rounded-lg transition no-print">🖨️ Imprimir Resumo</button>
+                </div>
+
+                <!-- TABELA 1: QUANTITATIVO POR PROGRAMAS -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">1. Quantitativo por Programas e Dependências</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 border-b border-slate-700">
+                                    <th class="p-2.5">Programa / Categoria</th>
+                                    <th class="p-2.5 text-center">Total Cadastrados</th>
+                                    <th class="p-2.5 text-center">Ativos</th>
+                                    <th class="p-2.5 text-center">Urgentes</th>
+                                    <th class="p-2.5 text-center">Inativos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-quant-programas" class="divide-y divide-slate-700">
+                                <!-- Preenchido via script -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TABELA 2: PACIENTES POR RUAS -->
+                <div class="space-y-2 pt-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">2. Quantitativo de Pacientes por Ruas</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 border-b border-slate-700">
+                                    <th class="p-2.5">Bloco / Rua</th>
+                                    <th class="p-2.5 text-center">Sigla</th>
+                                    <th class="p-2.5 text-center">Qtd. Pacientes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-quant-ruas" class="divide-y divide-slate-700">
+                                <!-- Preenchido via script -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- ABA RELATÓRIOS (A4 IMPRESSÃO) -->
@@ -227,6 +281,43 @@
                     <input type="text" id="edit-complemento" placeholder="Ex: Deficiente visual, vulnerável, LGBTQIA+, acamado..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                 </div>
 
+                <!-- BLOCO DE PACIENTE COMPLEXO -->
+                <div class="bg-purple-950/40 border border-purple-500/40 p-3 rounded-xl space-y-2">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="edit-complexo" onchange="toggleBlocoComplexo()" class="w-4 h-4 rounded accent-purple-500 bg-slate-900 border-slate-600">
+                        <span class="font-bold text-purple-300">🧠 Classificar como Paciente Complexo</span>
+                    </label>
+                    <div id="detalhes-complexo-div" class="hidden space-y-2 pt-1">
+                        <label class="block text-slate-400 font-semibold">Especifique a Condição Complexa:</label>
+                        <div class="grid grid-cols-2 gap-1.5 text-slate-300">
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Acamado" class="chk-comp accent-purple-500"> <span>Acamado</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Deficiência Física" class="chk-comp accent-purple-500"> <span>Def. Física</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Deficiência Visual" class="chk-comp accent-purple-500"> <span>Def. Visual</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="TEA (Autismo)" class="chk-comp accent-purple-500"> <span>TEA (Autismo)</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Síndrome de Down" class="chk-comp accent-purple-500"> <span>Síndrome de Down</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Transtorno Mental" class="chk-comp accent-purple-500"> <span>Transt. Mental</span></label>
+                        </div>
+                        <input type="text" id="edit-complexo-obs" placeholder="Outra especificação..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mt-1">
+                    </div>
+                </div>
+
+                <!-- BLOCO TABAGISMO, ÁLCOOL E OUTRAS DEPENDÊNCIAS -->
+                <div class="bg-amber-950/30 border border-amber-500/40 p-3 rounded-xl space-y-2">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="edit-tabagismo" onchange="toggleBlocoTabagismo()" class="w-4 h-4 rounded accent-amber-500 bg-slate-900 border-slate-600">
+                        <span class="font-bold text-amber-300">🚬 Tabagismo, Álcool ou Dependências Químicas</span>
+                    </label>
+                    <div id="detalhes-tabagismo-div" class="hidden space-y-2 pt-1">
+                        <div class="grid grid-cols-2 gap-2 text-slate-300">
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Tabagismo" class="chk-tab accent-amber-500"> <span>Tabagismo (Fumante)</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Uso de Álcool" class="chk-tab accent-amber-500"> <span>Uso Nocivo de Álcool</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Outras Drogas" class="chk-tab accent-amber-500"> <span>Outras Dependências</span></label>
+                            <label class="flex items-center space-x-1.5"><input type="checkbox" value="Em Tratamento/CAPS" class="chk-tab accent-amber-500"> <span>Em Tratamento (CAPS)</span></label>
+                        </div>
+                        <input type="text" id="edit-tab-obs" placeholder="Detalhes (ex: Em cessação de tabagismo, faz acompanhamento...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mt-1">
+                    </div>
+                </div>
+
                 <!-- REGISTRO DE NOVA ANOTAÇÃO PARA O PRONTUÁRIO -->
                 <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-emerald-500/40">
                     <span class="font-bold text-emerald-400 block">➕ Novo Registro no Prontuário</span>
@@ -290,13 +381,12 @@
                     </div>
                 </div>
 
-                <!-- BLOCO GESTANTE (GES) COM AVISO DE VACINAÇÃO (14 A 27 SEMANAS) -->
+                <!-- BLOCO GESTANTE (GES) -->
                 <div id="bloco-ges" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-emerald-400">🔹 Gestante (GES)</span>
                     </div>
                     
-                    <!-- Lembrete de Vacinação Dinâmico -->
                     <div id="aviso-vacina-gestante" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-2 rounded-lg text-[11px] font-semibold flex items-center space-x-1.5">
                         <span>⚠️</span>
                         <span>Período ideal de vacinação (DTPA / Hepatite B / Influenza): 14 a 27 semanas!</span>
@@ -368,6 +458,10 @@
             <button onclick="mudarAba('pacientes')" id="btn-aba-pacientes" class="flex flex-col items-center text-emerald-400 space-y-1">
                 <span class="text-xl">📋</span>
                 <span class="text-[11px] font-medium">Pacientes</span>
+            </button>
+            <button onclick="mudarAba('quantitativo')" id="btn-aba-quantitativo" class="flex flex-col items-center text-slate-400 space-y-1 hover:text-slate-200">
+                <span class="text-xl">📊</span>
+                <span class="text-[11px] font-medium">Painel</span>
             </button>
             <button onclick="mudarAba('relatorios')" id="btn-aba-relatorios" class="flex flex-col items-center text-slate-400 space-y-1 hover:text-slate-200">
                 <span class="text-xl">📝</span>
@@ -491,25 +585,32 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "2026-01-10", periodo: "Manhã", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "2025-10-15", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "20 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
-                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "2025-05-05", periodo: "Manhã", bolsaFamilia: "Não", registrado: true, complemento: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", periodo: "Manhã", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "2025-12-12", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", periodo: "Tarde", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
+                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "2026-01-10", periodo: "Manhã", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", complexo: true, complexoTipos: "Acamado | Deficiência Visual", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "2025-10-15", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", complexo: false, complexoTipos: "", tabagismo: true, tabagismoTipos: "Tabagismo", tabagismoObs: "Fumante moderada, orientada no pré-natal", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "20 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
+                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "2025-05-05", periodo: "Manhã", bolsaFamilia: "Não", registrado: true, complemento: "", complexo: false, complexoTipos: "", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", periodo: "Manhã", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "2025-12-12", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "", complexo: true, complexoTipos: "TEA (Autismo)", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", periodo: "Tarde", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
 
         function mudarAba(aba) {
             fecharTodosMenus();
-            ['pacientes', 'relatorios', 'config'].forEach(a => {
+            ['pacientes', 'quantitativo', 'relatorios', 'config'].forEach(a => {
                 document.getElementById(`tab-${a}`).classList.add('hidden');
-                document.getElementById(`btn-aba-${a}`).classList.remove('text-emerald-400');
-                document.getElementById(`btn-aba-${a}`).classList.add('text-slate-400');
+                const btn = document.getElementById(`btn-aba-${a}`);
+                if(btn) {
+                    btn.classList.remove('text-emerald-400');
+                    btn.classList.add('text-slate-400');
+                }
             });
             document.getElementById(`tab-${aba}`).classList.remove('hidden');
-            document.getElementById(`btn-aba-${aba}`).classList.remove('text-slate-400');
-            document.getElementById(`btn-aba-${aba}`).classList.add('text-emerald-400');
+            const btnAtivo = document.getElementById(`btn-aba-${aba}`);
+            if(btnAtivo) {
+                btnAtivo.classList.remove('text-slate-400');
+                btnAtivo.classList.add('text-emerald-400');
+            }
             if(aba === 'relatorios') construirTabelaRelatorioA4();
+            if(aba === 'quantitativo') construirPainelQuantitativo();
         }
 
         function atualizarEstatisticas() {
@@ -521,12 +622,14 @@
 
         function filtrarPrograma(prog) {
             filtroAtualPrograma = prog;
-            ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'BLSA', 'ID'].forEach(p => {
+            ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'BLSA', 'ID', 'TAB', 'COMPLEXOS'].forEach(p => {
                 const btn = document.getElementById(`btn-prog-${p}`);
-                if(p === prog) {
-                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition";
-                } else {
-                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition";
+                if(btn) {
+                    if(p === prog) {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition";
+                    }
                 }
             });
             renderizarPacientes();
@@ -669,6 +772,16 @@
             }
         }
 
+        function toggleBlocoComplexo() {
+            const marcado = document.getElementById('edit-complexo').checked;
+            document.getElementById('detalhes-complexo-div').classList.toggle('hidden', !marcado);
+        }
+
+        function toggleBlocoTabagismo() {
+            const marcado = document.getElementById('edit-tabagismo').checked;
+            document.getElementById('detalhes-tabagismo-div').classList.toggle('hidden', !marcado);
+        }
+
         function abrirModalEdicao(id) {
             const p = pacientes.find(item => item.id === id);
             if(!p) return;
@@ -678,6 +791,25 @@
             document.getElementById('edit-ultima-visita').value = formatarDataParaISO(p.ultimaConsulta);
             document.getElementById('edit-periodo').value = p.periodo || 'Manhã';
             document.getElementById('edit-complemento').value = p.complemento || '';
+            
+            // Complexo
+            const isComplexo = !!p.complexo;
+            document.getElementById('edit-complexo').checked = isComplexo;
+            document.getElementById('detalhes-complexo-div').classList.toggle('hidden', !isComplexo);
+            document.getElementById('edit-complexo-obs').value = p.complexoObs || '';
+            document.querySelectorAll('.chk-comp').forEach(chk => {
+                chk.checked = (p.complexoTipos || "").includes(chk.value);
+            });
+
+            // Tabagismo / Álcool
+            const isTab = !!p.tabagismo;
+            document.getElementById('edit-tabagismo').checked = isTab;
+            document.getElementById('detalhes-tabagismo-div').classList.toggle('hidden', !isTab);
+            document.getElementById('edit-tab-obs').value = p.tabagismoObs || '';
+            document.querySelectorAll('.chk-tab').forEach(chk => {
+                chk.checked = (p.tabagismoTipos || "").includes(chk.value);
+            });
+
             document.getElementById('edit-motivo-busca').value = '';
             document.getElementById('edit-visita-contato').value = '';
             document.getElementById('edit-responsavel').value = p.responsavel || '';
@@ -769,6 +901,37 @@
             p.ultimaConsulta = dataBr;
             p.periodo = periodoSelecionado;
             p.complemento = document.getElementById('edit-complemento').value.trim();
+
+            // Salvar Complexo
+            const isComplexo = document.getElementById('edit-complexo').checked;
+            p.complexo = isComplexo;
+            if(isComplexo) {
+                let tiposComp = [];
+                document.querySelectorAll('.chk-comp').forEach(chk => {
+                    if(chk.checked) tiposComp.push(chk.value);
+                });
+                p.complexoTipos = tiposComp.join(' | ');
+                p.complexoObs = document.getElementById('edit-complexo-obs').value.trim();
+            } else {
+                p.complexoTipos = '';
+                p.complexoObs = '';
+            }
+
+            // Salvar Tabagismo / Álcool
+            const isTab = document.getElementById('edit-tabagismo').checked;
+            p.tabagismo = isTab;
+            if(isTab) {
+                let tiposTab = [];
+                document.querySelectorAll('.chk-tab').forEach(chk => {
+                    if(chk.checked) tiposTab.push(chk.value);
+                });
+                p.tabagismoTipos = tiposTab.join(' | ');
+                p.tabagismoObs = document.getElementById('edit-tab-obs').value.trim();
+            } else {
+                p.tabagismoTipos = '';
+                p.tabagismoObs = '';
+            }
+
             const novoMotivo = document.getElementById('edit-motivo-busca').value.trim();
             const novoContato = document.getElementById('edit-visita-contato').value.trim();
 
@@ -843,21 +1006,27 @@
 
                 let matchProg = true;
                 if(filtroAtualPrograma !== 'TODOS') {
-                    const progStr = (p.programa || "").toUpperCase();
-                    const bolsaStr = (p.bolsaFamilia || "").toUpperCase();
-                    
-                    if(filtroAtualPrograma === 'BLSA') {
-                        matchProg = bolsaStr.includes('SIM') || progStr.includes('BOLSA') || progStr.includes('BLSA');
+                    if(filtroAtualPrograma === 'COMPLEXOS') {
+                        matchProg = !!p.complexo;
+                    } else if(filtroAtualPrograma === 'TAB') {
+                        matchProg = !!p.tabagismo;
                     } else {
-                        const termos = {
-                            'DM': ['DM', 'DIABET', 'DIABÉTICO'],
-                            'HAS': ['HAS', 'HIPERTENS', 'HIPERTENSO'],
-                            'GES': ['GES', 'GESTANTE'],
-                            'CR': ['CR', 'CRIANÇA', 'CRIA'],
-                            'ID': ['ID', 'IDOSO', 'IDOSOS', 'VELHO']
-                        };
-                        const listaTermos = termos[filtroAtualPrograma] || [filtroAtualPrograma];
-                        matchProg = listaTermos.some(t => progStr.includes(t));
+                        const progStr = (p.programa || "").toUpperCase();
+                        const bolsaStr = (p.bolsaFamilia || "").toUpperCase();
+                        
+                        if(filtroAtualPrograma === 'BLSA') {
+                            matchProg = bolsaStr.includes('SIM') || progStr.includes('BOLSA');
+                        } else {
+                            const termos = {
+                                'DM': ['DM', 'DIABET'],
+                                'HAS': ['HAS', 'HIPERTENS'],
+                                'GES': ['GES', 'GESTA'],
+                                'CR': ['CR', 'CRIANÇA'],
+                                'ID': ['ID', 'IDOSO']
+                            };
+                            const listaTermos = termos[filtroAtualPrograma] || [filtroAtualPrograma];
+                            matchProg = listaTermos.some(t => progStr.includes(t));
+                        }
                     }
                 }
 
@@ -912,6 +1081,8 @@
                 }
 
                 let complementoHtml = p.complemento ? `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">Obs/Compl: <strong>${p.complemento}</strong></span>` : '';
+                let complexoBadge = p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo: ${p.complexoTipos || 'Sim'} ${p.complexoObs ? '('+p.complexoObs+')':''}</span>` : '';
+                let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'} ${p.tabagismoObs ? '('+p.tabagismoObs+')':''}</span>` : '';
                 let respCuidadorInfo = (progU.includes('IDOSO') || progU.includes('ID') || progU.includes('CRIANÇA') || progU.includes('CR')) ? `Resp. / Cuidador: ${p.responsavel || '-'} / ${p.cuidador || '-'}` : `Programa Principal`;
 
                 return `
@@ -939,11 +1110,80 @@
                             <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded">Últ. BA: <strong>${ultimoHistorico.motivo}</strong></span>
                             <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded">Últ. Contato: <strong>${ultimoHistorico.contato}</strong></span>
                             ${complementoHtml}
+                            ${complexoBadge}
+                            ${tabBadge}
                             ${detalhesEspecificosHtml}
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function construirPainelQuantitativo() {
+            const categorias = [
+                { nome: 'Hipertensão (HAS)', chave: 'HAS' },
+                { nome: 'Diabetes (DM)', chave: 'DM' },
+                { nome: 'Gestantes (GES)', chave: 'GES' },
+                { nome: 'Crianças (CR)', chave: 'CR' },
+                { nome: 'Idosos (ID)', chave: 'ID' },
+                { nome: 'Bolsa Família (BLSA)', chave: 'BLSA' },
+                { nome: 'Tabagismo, Álcool e Outras Dependências', chave: 'TAB' },
+                { nome: 'Casos Complexos (Acamados, TEA, Deficiências)', chave: 'COMPLEXOS' }
+            ];
+
+            const tbodyProg = document.getElementById('tabela-quant-programas');
+            tbodyProg.innerHTML = categorias.map(cat => {
+                let filtrados = pacientes.filter(p => {
+                    const progStr = (p.programa || "").toUpperCase();
+                    const bolsaStr = (p.bolsaFamilia || "").toUpperCase();
+                    if(cat.chave === 'COMPLEXOS') return !!p.complexo;
+                    if(cat.chave === 'TAB') return !!p.tabagismo;
+                    if(cat.chave === 'BLSA') return bolsaStr.includes('SIM') || progStr.includes('BOLSA');
+                    const termos = {
+                        'DM': ['DM', 'DIABET'],
+                        'HAS': ['HAS', 'HIPERTENS'],
+                        'GES': ['GES', 'GESTA'],
+                        'CR': ['CR', 'CRIANÇA'],
+                        'ID': ['ID', 'IDOSO']
+                    };
+                    return (termos[cat.chave] || []).some(t => progStr.includes(t));
+                });
+
+                const total = filtrados.length;
+                const ativos = filtrados.filter(p => avaliarStatusVisita(p) === 'Ativo').length;
+                const urgentes = filtrados.filter(p => avaliarStatusVisita(p) === 'Urgente').length;
+                const inativos = filtrados.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
+
+                return `
+                    <tr class="hover:bg-slate-700/50">
+                        <td class="p-2.5 font-semibold text-slate-200">${cat.nome}</td>
+                        <td class="p-2.5 text-center font-bold text-emerald-400">${total}</td>
+                        <td class="p-2.5 text-center text-blue-400">${ativos}</td>
+                        <td class="p-2.5 text-center text-red-400">${urgentes}</td>
+                        <td class="p-2.5 text-center text-amber-400">${inativos}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            let contagemRuas = {};
+            pacientes.forEach(p => {
+                let ruaOriginal = (p.enderecoOriginal || p.endereco || "NÃO INFORMADA").trim().toUpperCase();
+                contagemRuas[ruaOriginal] = (contagemRuas[ruaOriginal] || 0) + 1;
+            });
+
+            const tbodyRuas = document.getElementById('tabela-quant-ruas');
+            let ruasHtml = '';
+            for(let r in contagemRuas) {
+                let sigla = obterIniciaisPorNome(r);
+                ruasHtml += `
+                    <tr class="hover:bg-slate-700/50">
+                        <td class="p-2.5 text-slate-200">${r}</td>
+                        <td class="p-2.5 text-center font-bold text-emerald-400">${sigla}</td>
+                        <td class="p-2.5 text-center font-semibold text-slate-100">${contagemRuas[r]}</td>
+                    </tr>
+                `;
+            }
+            tbodyRuas.innerHTML = ruasHtml || `<tr><td colspan="3" class="p-4 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
         }
 
         function construirTabelaRelatorioA4() {
@@ -990,6 +1230,8 @@
                     let progU = (p.programa || "").toUpperCase();
                     let semRel = progU.includes('GESTA') ? `Sem: ${p.semanas || calcularSemanasGestante(p.ultimaConsulta)} | Trabalha: ${p.trabalha || '-'}` : '';
                     let infoExtra = `Glicada: ${p.glicada || '-'} | Insulina: ${p.insulina || '-'} ${semRel} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
+                    if(p.complexo) infoExtra += ` | 🧠 Complexo: ${p.complexoTipos} ${p.complexoObs ? '('+p.complexoObs+')':''}`;
+                    if(p.tabagismo) infoExtra += ` | 🚬 Tab/Álc: ${p.tabagismoTipos} ${p.tabagismoObs ? '('+p.tabagismoObs+')':''}`;
                     const progAbrev = formatarProgramaAbreviado(p.programa);
                     const perAbrev = ultimoH.periodo ? ` (${ultimoH.periodo})` : '';
                     html += `
@@ -1036,6 +1278,8 @@
                             bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
                             registrado: false,
                             complemento: '',
+                            complexo: false, complexoTipos: '', complexoObs: '',
+                            tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
                             historico: [],
                             responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', trabalha: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
                         };
