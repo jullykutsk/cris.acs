@@ -212,12 +212,46 @@
                     <input type="text" id="edit-ultima-visita" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                 </div>
 
-                <div id="bloco-dm" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <span class="font-bold text-emerald-400 block">🔹 Diabetes (DM)</span>
-                    <label class="block text-slate-400">Glicada (HbA1c)</label>
-                    <input type="text" id="edit-glicada" placeholder="Ex: 7.2%" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                <!-- ANOTAÇÕES GERAIS -->
+                <div class="space-y-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">📌 Anotações de Acompanhamento</span>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Motivo da Busca Ativa</label>
+                        <input type="text" id="edit-motivo-busca" placeholder="Ex: Falta à consulta, exames atrasados..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Visita Domiciliar / Contato</label>
+                        <textarea id="edit-visita-contato" rows="2" placeholder="Anotações sobre a visita ou contato realizado..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100"></textarea>
+                    </div>
                 </div>
 
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Responsável</label>
+                        <input type="text" id="edit-responsavel" placeholder="Nome do responsável" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Cuidador</label>
+                        <input type="text" id="edit-cuidador" placeholder="Nome do cuidador" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                </div>
+
+                <!-- BLOCO DIABETES (DM) -->
+                <div id="bloco-dm" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Diabetes (DM)</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1">Glicada (HbA1c)</label>
+                            <input type="text" id="edit-glicada" placeholder="Ex: 7.2%" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">Uso de Insulina?</label>
+                            <input type="text" id="edit-insulina" placeholder="Ex: Sim / Não" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCO HIPERTENSÃO (HAS) -->
                 <div id="bloco-has" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
                     <span class="font-bold text-emerald-400 block">🔹 Hipertensão (HAS)</span>
                     <div class="grid grid-cols-2 gap-2">
@@ -232,6 +266,7 @@
                     </div>
                 </div>
 
+                <!-- BLOCO GESTANTE (GES) -->
                 <div id="bloco-ges" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
                     <span class="font-bold text-emerald-400 block">🔹 Gestante (GES)</span>
                     <div class="grid grid-cols-2 gap-2">
@@ -258,12 +293,14 @@
                     </div>
                 </div>
 
+                <!-- BLOCO CRIANÇA (CR) -->
                 <div id="bloco-cr" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
                     <span class="font-bold text-emerald-400 block">🔹 Criança (CR)</span>
                     <label class="block text-slate-400">Vacinas Faltantes / Acompanhamento</label>
                     <input type="text" id="edit-vacinas-cr" placeholder="Ex: Pentavalente pendente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                 </div>
 
+                <!-- BLOCO IDOSO (ID) -->
                 <div id="bloco-id" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
                     <span class="font-bold text-emerald-400 block">🔹 Idoso (ID)</span>
                     <label class="block text-slate-400">Vacinas (Idoso)</label>
@@ -367,10 +404,10 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, glicada: "7.2%", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", registrado: false, glicada: "", ecg: "", mapa: "", semanas: "24 semanas", risco: "Alto Risco", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
-                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", registrado: true, glicada: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", registrado: false, glicada: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
+                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, responsavel: "Carlos S.", cuidador: "Maria S.", motivoBusca: "Falta de exames", visitaContato: "Orientado a buscar UBS", glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", registrado: false, responsavel: "Ela mesma", cuidador: "-", motivoBusca: "Pré-natal em atraso", visitaContato: "Comparecer na próxima terça", glicada: "", insulina: "", ecg: "", mapa: "", semanas: "24 semanas", risco: "Alto Risco", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
+                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", registrado: true, responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", motivoBusca: "Renovação de receita", visitaContato: "Receita entregue à filha", glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", registrado: false, responsavel: "Mariana H.", cuidador: "Mãe", motivoBusca: "Busca ativa vacinação", visitaContato: "Cartão verificado, falta Pentavalente", glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -526,7 +563,6 @@
             renderizarPacientes();
         }
 
-        // Função para alternar o registro direto no card
         function alternarRegistroPaciente(id) {
             const p = pacientes.find(item => item.id === id);
             if(p) {
@@ -535,7 +571,6 @@
             }
         }
 
-        // FUNÇÕES DA MODAL DE EDIÇÃO
         function abrirModalEdicao(id) {
             const p = pacientes.find(item => item.id === id);
             if(!p) return;
@@ -543,7 +578,12 @@
             document.getElementById('edit-id').value = p.id;
             document.getElementById('modal-titulo').innerText = `Editar: ${p.nome}`;
             document.getElementById('edit-ultima-visita').value = p.ultimaConsulta || '';
+            document.getElementById('edit-motivo-busca').value = p.motivoBusca || '';
+            document.getElementById('edit-visita-contato').value = p.visitaContato || '';
+            document.getElementById('edit-responsavel').value = p.responsavel || '';
+            document.getElementById('edit-cuidador').value = p.cuidador || '';
             document.getElementById('edit-glicada').value = p.glicada || '';
+            document.getElementById('edit-insulina').value = p.insulina || '';
             document.getElementById('edit-ecg').value = p.ecg || '';
             document.getElementById('edit-mapa').value = p.mapa || '';
             document.getElementById('edit-semanas').value = p.semanas || '';
@@ -561,6 +601,8 @@
             document.getElementById('amb-4').checked = ambStr.includes('limpo') || ambStr.includes('arejado');
 
             const progU = (p.programa || "").toUpperCase();
+            
+            // AGORA MOSTRA TODOS OS BLOCOS CORRESPONDENTES CASO O PACIENTE ESTEJA EM MAIS DE UM PROGRAMA
             document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET') && !progU.includes('DM'));
             document.getElementById('bloco-has').classList.toggle('hidden', !progU.includes('HIPERTENS') && !progU.includes('HAS'));
             document.getElementById('bloco-ges').classList.toggle('hidden', !progU.includes('GESTA') && !progU.includes('GES'));
@@ -580,9 +622,17 @@
             if(!p) return;
 
             p.ultimaConsulta = document.getElementById('edit-ultima-visita').value || '-';
+            p.motivoBusca = document.getElementById('edit-motivo-busca').value || '-';
+            p.visitaContato = document.getElementById('edit-visita-contato').value || '-';
+            p.responsavel = document.getElementById('edit-responsavel').value || '-';
+            p.cuidador = document.getElementById('edit-cuidador').value || '-';
+            
             const progU = (p.programa || "").toUpperCase();
 
-            if (progU.includes('DIABET') || progU.includes('DM')) p.glicada = document.getElementById('edit-glicada').value;
+            if (progU.includes('DIABET') || progU.includes('DM')) {
+                p.glicada = document.getElementById('edit-glicada').value;
+                p.insulina = document.getElementById('edit-insulina').value;
+            }
             if (progU.includes('HIPERTENS') || progU.includes('HAS')) {
                 p.ecg = document.getElementById('edit-ecg').value;
                 p.mapa = document.getElementById('edit-mapa').value;
@@ -668,6 +718,7 @@
                 
                 if (progU.includes('DIABET') || progU.includes('DM')) {
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Glicada: <strong>${p.glicada || 'Pendente'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Insulina: <strong>${p.insulina || 'Não'}</strong></span>`;
                 }
                 if (progU.includes('HIPERTENS') || progU.includes('HAS')) {
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">ECG: <strong>${p.ecg || '-'}</strong></span>`;
@@ -706,10 +757,12 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
                             <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo}</div>
                             <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero}</div>
-                            <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia}</div>
+                            <div><span class="text-slate-500 block">Resp. / Cuidador:</span> ${p.responsavel || '-'} / ${p.cuidador || '-'}</div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
                             <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita: <strong>${p.ultimaConsulta}</strong></span>
+                            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded">Motivo BA: <strong>${p.motivoBusca || '-'}</strong></span>
+                            <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded">Contato/Visita: <strong>${p.visitaContato || '-'}</strong></span>
                             ${detalhesEspecificosHtml}
                         </div>
                     </div>
@@ -749,22 +802,22 @@
                                 <tr>
                                     <th>Nome Usuário</th>
                                     <th>Programa</th>
+                                    <th>Motivo BA / Contato</th>
                                     <th>Últ. Visita</th>
-                                    <th>Dados Específicos / Clínicos</th>
-                                    <th>Observações / Anotações</th>
+                                    <th>Dados Clínicos / Observações</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
                 agrupado[chave].forEach(p => {
-                    let infoExtra = `Glicada: ${p.glicada || '-'} | Sem: ${p.semanas} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
+                    let infoExtra = `Glicada: ${p.glicada || '-'} | Insulina: ${p.insulina || '-'} | Sem: ${p.semanas} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
                     html += `
                         <tr>
                             <td class="font-medium">${p.nome}</td>
                             <td>${p.programa}</td>
+                            <td><strong>BA:</strong> ${p.motivoBusca || '-'}<br><strong>Contato:</strong> ${p.visitaContato || '-'}</td>
                             <td>${p.ultimaConsulta}</td>
                             <td>${infoExtra}</td>
-                            <td class="w-32"></td>
                         </tr>
                     `;
                 });
@@ -800,7 +853,7 @@
                             ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
                             bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
                             registrado: false,
-                            glicada: '', ecg: '', mapa: '', semanas: '', risco: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
+                            motivoBusca: '', visitaContato: '', responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
                         };
                     });
 
