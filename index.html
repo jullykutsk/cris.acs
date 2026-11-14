@@ -41,7 +41,7 @@
 
         <!-- ABA PACIENTES & DASHBOARD -->
         <section id="tab-pacientes" class="space-y-4">
-            <!-- CARDS DE RESUMO (Substituído Bolsa Família por Inativos) -->
+            <!-- CARDS DE RESUMO -->
             <div class="grid grid-cols-4 gap-2 no-print">
                 <div onclick="filtrarStatus('TODOS')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
                     <span id="stat-total" class="block text-xl font-bold text-emerald-400">0</span>
@@ -61,12 +61,23 @@
                 </div>
             </div>
 
+            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS -->
+            <div class="flex flex-wrap gap-1.5 no-print items-center bg-slate-800/60 p-2 rounded-xl border border-slate-700/80">
+                <span class="text-[11px] text-slate-400 font-bold px-1">Programas:</span>
+                <button onclick="filtrarPrograma('TODOS')" id="btn-prog-TODOS" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">Todos</button>
+                <button onclick="filtrarPrograma('DM')" id="btn-prog-DM" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">DM</button>
+                <button onclick="filtrarPrograma('HAS')" id="btn-prog-HAS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">HAS</button>
+                <button onclick="filtrarPrograma('GES')" id="btn-prog-GES" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">GES</button>
+                <button onclick="filtrarPrograma('CR')" id="btn-prog-CR" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">CR</button>
+                <button onclick="filtrarPrograma('BLSA')" id="btn-prog-BLSA" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">BLSA</button>
+                <button onclick="filtrarPrograma('ID')" id="btn-prog-ID" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">ID</button>
+            </div>
+
             <!-- BUSCA E OS 3 SUBMENUS DE BLOCOS COM MÚLTIPLA ESCOLHA -->
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-2.5 no-print">
                 <input type="text" id="input-busca" oninput="renderizarPacientes()" placeholder="Buscar por nome do usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                 
                 <div class="grid grid-cols-3 gap-2">
-                    <!-- Bloco 01 -->
                     <div class="relative">
                         <button type="button" onclick="toggleMenuBloco('pac', 1)" class="w-full bg-slate-900 border border-slate-700 hover:border-emerald-500 rounded-lg px-2.5 py-2 text-xs text-emerald-400 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 01 <span id="badge-pac-1" class="hidden ml-1 bg-emerald-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
@@ -75,7 +86,6 @@
                         <div id="menu-pac-1" class="hidden absolute left-0 mt-1 w-72 max-w-[85vw] bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-40 p-2 space-y-1 max-h-64 overflow-y-auto"></div>
                     </div>
 
-                    <!-- Bloco 02 -->
                     <div class="relative">
                         <button type="button" onclick="toggleMenuBloco('pac', 2)" class="w-full bg-slate-900 border border-slate-700 hover:border-blue-500 rounded-lg px-2.5 py-2 text-xs text-blue-400 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 02 <span id="badge-pac-2" class="hidden ml-1 bg-blue-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
@@ -84,7 +94,6 @@
                         <div id="menu-pac-2" class="hidden absolute left-1/2 -translate-x-1/2 mt-1 w-72 max-w-[85vw] bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-40 p-2 space-y-1 max-h-64 overflow-y-auto"></div>
                     </div>
 
-                    <!-- Bloco 03 -->
                     <div class="relative">
                         <button type="button" onclick="toggleMenuBloco('pac', 3)" class="w-full bg-slate-900 border border-slate-700 hover:border-purple-500 rounded-lg px-2.5 py-2 text-xs text-purple-400 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 03 <span id="badge-pac-3" class="hidden ml-1 bg-purple-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
@@ -171,7 +180,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Ativo/Inativo, Próximo Exame, Próxima Consulta, ECG, MAPA.</p>
+                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família, Próximo Exame, Próxima Consulta, ECG, MAPA.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -224,7 +233,7 @@
                 { nome: "RUA PAULO ESTEPHANO CAVICHIOLO", iniciais: "RPEC" },
                 { nome: "RUA JOSE ANTONIO NICHELE", iniciais: "RJAN" },
                 { nome: "RUA AGOSTINHO ZANIOLO", iniciais: "RAZ" },
-                { nome: "RUI LUIZ NICHELE", iniciais: "RLN" }
+                { nome: "RUA LUIZ NICHELE", iniciais: "RLN" }
             ],
             3: [
                 { nome: "RUA ANGELO GAI", iniciais: "RAG" },
@@ -237,10 +246,10 @@
 
         let pacientes = JSON.parse(localStorage.getItem('acs_pacientes_oficial')) || [];
         let filtroAtualStatus = 'TODOS';
+        let filtroAtualPrograma = 'TODOS';
         let ruasSelecionadasPac = new Set();
         let ruasSelecionadasRel = new Set();
 
-        // Função para calcular meses entre duas datas DD/MM/AAAA
         function calcularMeses(dataStr) {
             if(!dataStr || dataStr === '-') return 0;
             const partes = dataStr.split('/');
@@ -249,24 +258,22 @@
             const hoje = new Date();
             const diffTime = hoje - dataConsulta;
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
-            return diffDays / 30; // Aproximação em meses
+            return diffDays / 30;
         }
 
-        // Determinar status do paciente com base nas regras de Visita/BA
         function avaliarStatusVisita(p) {
             const meses = calcularMeses(p.ultimaConsulta);
-            if (meses > 6) return 'Inativo';       // Passou de 6 meses
-            if (meses >= 5) return 'Urgente';     // Falta 1 mês para completar 6 (está com 5 a 6 meses)
-            return 'Ativo';                       // Em dia
+            if (meses > 6) return 'Inativo';
+            if (meses >= 5) return 'Urgente';
+            return 'Ativo';
         }
 
-        // Dados de exemplo
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "RUA EDUARDO PINTO DA ROCHA", numero: "120", ultimaConsulta: "10/01/2026", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
-                { id: 2, programa: "Hipertensos / Diabéticos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "RUA PAULO ESTEPHANO CAVICHIOLO", numero: "45", ultimaConsulta: "05/05/2025", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
-                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "RUA ANGELO GAI", numero: "12", ultimaConsulta: "15/10/2025", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
-                { id: 4, programa: "Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "RUA ANTONIO MATHEUS", numero: "122", ultimaConsulta: "12/12/2025", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
+                { id: 1, programa: "Hipertensos / Diabéticos / Idosos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "RUA EDUARDO PINTO DA ROCHA", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
+                { id: 2, programa: "Hipertensos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "RUA PAULO ESTEPHANO CAVICHIOLO", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
+                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "RUA ANGELO GAI", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
+                { id: 4, programa: "Crianças / Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "RUA ANTONIO MATHEUS", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -289,6 +296,20 @@
             document.getElementById('stat-urgente').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Urgente').length;
             document.getElementById('stat-ativos').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Ativo').length;
             document.getElementById('stat-inativos').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
+        }
+
+        function filtrarPrograma(prog) {
+            filtroAtualPrograma = prog;
+            // Atualiza estilo visual dos botões
+            ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'BLSA', 'ID'].forEach(p => {
+                const btn = document.getElementById(`btn-prog-${p}`);
+                if(p === prog) {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition";
+                }
+            });
+            renderizarPacientes();
         }
 
         function construirMenusCheckbox() {
@@ -426,11 +447,33 @@
                 if(filtroAtualStatus === 'ATIVOS') matchStatus = (stVisita === 'Ativo');
                 if(filtroAtualStatus === 'INATIVOS') matchStatus = (stVisita === 'Inativo');
 
-                return matchBusca && matchRua && matchStatus;
+                // Filtro flexível por programas múltiples (DM, HAS, GES, CR, BLSA, ID)
+                let matchProg = true;
+                if(filtroAtualPrograma !== 'TODOS') {
+                    const progStr = (p.programa || "").toUpperCase();
+                    const bolsaStr = (p.bolsaFamilia || "").toUpperCase();
+                    
+                    if(filtroAtualPrograma === 'BLSA') {
+                        matchProg = bolsaStr.includes('SIM') || progStr.includes('BOLSA') || progStr.includes('BLSA');
+                    } else {
+                        // Verifica correspondência parcial (ex: DM encontra Diabético, HAS encontra Hipertensos, etc)
+                        const termos = {
+                            'DM': ['DM', 'DIABET', 'DIABÉTICO'],
+                            'HAS': ['HAS', 'HIPERTENS', 'HIPERTENSO'],
+                            'GES': ['GES', 'GESTANTE'],
+                            'CR': ['CR', 'CRIANÇA', 'CRIA'],
+                            'ID': ['ID', 'IDOSO', 'IDOSOS', 'VELHO']
+                        };
+                        const listaTermos = termos[filtroAtualPrograma] || [filtroAtualPrograma];
+                        matchProg = listaTermos.some(t => progStr.includes(t));
+                    }
+                }
+
+                return matchBusca && matchRua && matchStatus && matchProg;
             });
 
             if(filtrados.length === 0) {
-                listaDiv.innerHTML = `<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-slate-400 text-sm">Nenhum paciente encontrado.</div>`;
+                listaDiv.innerHTML = `<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-slate-400 text-sm">Nenhum paciente encontrado para os filtros selecionados.</div>`;
                 return;
             }
 
@@ -452,13 +495,12 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
                             <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo}</div>
                             <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero}</div>
-                            <div><span class="text-slate-500 block">Últ. Consulta/Visita:</span> ${p.ultimaConsulta}</div>
+                            <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia}</div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
+                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita/Consulta: <strong>${p.ultimaConsulta}</strong></span>
                             <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Próx. Exame: <strong>${p.proximoExame}</strong></span>
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Próx. Consulta: <strong>${p.proximaConsulta}</strong></span>
                             <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">ECG: <strong class="${p.ecg === 'Pendente' ? 'text-red-400' : 'text-emerald-400'}">${p.ecg}</strong></span>
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">MAPA: <strong class="${p.mapa === 'Pendente' ? 'text-red-400' : 'text-emerald-400'}">${p.mapa}</strong></span>
                         </div>
                     </div>
                 `;
@@ -542,6 +584,7 @@
                         endereco: (row['Endereço'] || row['endereco'] || 'Rua Principal').toUpperCase(),
                         numero: row['Nº'] || row['numero'] || 'S/N',
                         ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
+                        bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
                         proximoExame: row['Próximo Exame'] || 'Pendente',
                         proximaConsulta: row['Próxima Consulta'] || 'Pendente',
                         ecg: row['ECG'] || 'Pendente',
