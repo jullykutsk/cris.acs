@@ -61,9 +61,8 @@
                 </div>
             </div>
 
-            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS -->
+            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS (SEM A PALAVRA PROGRAMAS) -->
             <div class="flex flex-wrap gap-1.5 no-print items-center bg-slate-800/60 p-2 rounded-xl border border-slate-700/80">
-                <span class="text-[11px] text-slate-400 font-bold px-1">Programas:</span>
                 <button onclick="filtrarPrograma('TODOS')" id="btn-prog-TODOS" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">Todos</button>
                 <button onclick="filtrarPrograma('DM')" id="btn-prog-DM" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">DM</button>
                 <button onclick="filtrarPrograma('HAS')" id="btn-prog-HAS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">HAS</button>
@@ -112,9 +111,7 @@
             </div>
 
             <!-- LISTA DE PACIENTES -->
-            <div id="lista-pacientes" class="space-y-3">
-                <!-- Preenchido via JavaScript -->
-            </div>
+            <div id="lista-pacientes" class="space-y-3"></div>
         </section>
 
         <!-- ABA RELATÓRIOS (A4 IMPRESSÃO) -->
@@ -219,28 +216,29 @@
 
     <!-- SCRIPT DE LÓGICA -->
     <script>
+        // Iniciais sem o "R" inicial (ex: AM, PBB, NB, EP...)
         const BLOCOS_RUAS = {
             1: [
-                { nome: "RUA ANTONIO MATHEUS", iniciais: "RAM" },
-                { nome: "RUA PIERINA BERTUZZI BORIN", iniciais: "RPBB" },
-                { nome: "RUA NATHALIA BOZZA", iniciais: "RNB" },
-                { nome: "RUA EDUARDO PINTO DA ROCHA", iniciais: "EPR" },
-                { nome: "RUA ROSA CAVICHIOLO NICHELE", iniciais: "RRCN" },
-                { nome: "RUA ANTONIO BAGGIO", iniciais: "RAB" },
-                { nome: "RUA BERMIVAL ANTONIO BOZZA", iniciais: "RBAB" }
+                { nome: "RUA ANTONIO MATHEUS", iniciais: "AM" },
+                { nome: "RUA PIERINA BERTUZZI BORIN", iniciais: "PBB" },
+                { nome: "RUA NATHALIA BOZZA", iniciais: "NB" },
+                { nome: "RUA EDUARDO PINTO DA ROCHA", iniciais: "EP" },
+                { nome: "RUA ROSA CAVICHIOLO NICHELE", iniciais: "RCN" },
+                { nome: "RUA ANTONIO BAGGIO", iniciais: "AB" },
+                { nome: "RUA BERMIVAL ANTONIO BOZZA", iniciais: "BAB" }
             ],
             2: [
-                { nome: "RUA PAULO ESTEPHANO CAVICHIOLO", iniciais: "RPEC" },
-                { nome: "RUA JOSE ANTONIO NICHELE", iniciais: "RJAN" },
-                { nome: "RUA AGOSTINHO ZANIOLO", iniciais: "RAZ" },
-                { nome: "RUA LUIZ NICHELE", iniciais: "RLN" }
+                { nome: "RUA PAULO ESTEPHANO CAVICHIOLO", iniciais: "PEC" },
+                { nome: "RUA JOSE ANTONIO NICHELE", iniciais: "JAN" },
+                { nome: "RUA AGOSTINHO ZANIOLO", iniciais: "AZ" },
+                { nome: "RUA LUIZ NICHELE", iniciais: "LN" }
             ],
             3: [
-                { nome: "RUA ANGELO GAI", iniciais: "RAG" },
-                { nome: "RUA ANGELA GABARDO PAROLIN", iniciais: "RAGP" },
-                { nome: "RUA EXPEDICIONARIO OCTAVIO ZONTTA", iniciais: "REOZ" },
-                { nome: "RUA SANTA TEREZINHA", iniciais: "RST" },
-                { nome: "RUA RIDE BOZA", iniciais: "RRB" }
+                { nome: "RUA ANGELO GAI", iniciais: "AG" },
+                { nome: "RUA ANGELA GABARDO PAROLIN", iniciais: "AGP" },
+                { nome: "RUA EXPEDICIONARIO OCTAVIO ZONTTA", iniciais: "EOZ" },
+                { nome: "RUA SANTA TEREZINHA", iniciais: "ST" },
+                { nome: "RUA RIDE BOZA", iniciais: "RB" }
             ]
         };
 
@@ -300,7 +298,6 @@
 
         function filtrarPrograma(prog) {
             filtroAtualPrograma = prog;
-            // Atualiza estilo visual dos botões
             ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'BLSA', 'ID'].forEach(p => {
                 const btn = document.getElementById(`btn-prog-${p}`);
                 if(p === prog) {
@@ -447,7 +444,6 @@
                 if(filtroAtualStatus === 'ATIVOS') matchStatus = (stVisita === 'Ativo');
                 if(filtroAtualStatus === 'INATIVOS') matchStatus = (stVisita === 'Inativo');
 
-                // Filtro flexível por programas múltiples (DM, HAS, GES, CR, BLSA, ID)
                 let matchProg = true;
                 if(filtroAtualPrograma !== 'TODOS') {
                     const progStr = (p.programa || "").toUpperCase();
@@ -456,7 +452,6 @@
                     if(filtroAtualPrograma === 'BLSA') {
                         matchProg = bolsaStr.includes('SIM') || progStr.includes('BOLSA') || progStr.includes('BLSA');
                     } else {
-                        // Verifica correspondência parcial (ex: DM encontra Diabético, HAS encontra Hipertensos, etc)
                         const termos = {
                             'DM': ['DM', 'DIABET', 'DIABÉTICO'],
                             'HAS': ['HAS', 'HIPERTENS', 'HIPERTENSO'],
