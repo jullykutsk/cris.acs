@@ -207,9 +207,19 @@
             <input type="hidden" id="edit-id">
 
             <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Data da Visita / Atendimento (DD/MM/AAAA)</label>
-                    <input type="text" id="edit-ultima-visita" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100" placeholder="Ex: 14/02/2026">
+                <!-- SELETOR DE DATA OFICIAL E PERÍODO -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Data da Visita / Atendimento</label>
+                        <input type="date" id="edit-ultima-visita" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Período</label>
+                        <select id="edit-periodo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                            <option value="Manhã">☀️ Manhã</option>
+                            <option value="Tarde">🌙 Tarde</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
@@ -280,13 +290,22 @@
                     </div>
                 </div>
 
-                <!-- BLOCO GESTANTE (GES) - COM SEMANAS AUTOMÁTICAS E CAMPO TRABALHA -->
+                <!-- BLOCO GESTANTE (GES) COM AVISO DE VACINAÇÃO (14 A 27 SEMANAS) -->
                 <div id="bloco-ges" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <span class="font-bold text-emerald-400 block">🔹 Gestante (GES)</span>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-emerald-400">🔹 Gestante (GES)</span>
+                    </div>
+                    
+                    <!-- Lembrete de Vacinação Dinâmico -->
+                    <div id="aviso-vacina-gestante" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-2 rounded-lg text-[11px] font-semibold flex items-center space-x-1.5">
+                        <span>⚠️</span>
+                        <span>Período ideal de vacinação (DTPA / Hepatite B / Influenza): 14 a 27 semanas!</span>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-slate-400">Semanas (Automático / Editável)</label>
-                            <input type="text" id="edit-semanas" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-bold text-emerald-400">
+                            <input type="text" id="edit-semanas" oninput="checarAvisoVacinaModal()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-bold text-emerald-400">
                         </div>
                         <div>
                             <label class="block text-slate-400">Risco</label>
@@ -394,6 +413,21 @@
         let ruasSelecionadasPac = new Set();
         let ruasSelecionadasRel = new Set();
 
+        function formatarDataParaISO(dataStr) {
+            if(!dataStr || dataStr === '-') return new Date().toISOString().split('T')[0];
+            if(dataStr.includes('-')) return dataStr;
+            const partes = dataStr.split('/');
+            if(partes.length === 3) return `${partes[2]}-${partes[1]}-${partes[0]}`;
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function formatarDataParaBR(dataIso) {
+            if(!dataIso) return '-';
+            const partes = dataIso.split('-');
+            if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            return dataIso;
+        }
+
         function formatarProgramaAbreviado(texto) {
             if(!texto) return 'GERAL';
             let t = texto.toUpperCase();
@@ -410,11 +444,16 @@
             return texto;
         }
 
+        function extrairNumeroSemanas(strSemanas) {
+            if(!strSemanas) return 0;
+            const match = strSemanas.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+        }
+
         function calcularSemanasGestante(dataStr) {
             if(!dataStr || dataStr === '-') return '24 semanas';
-            const partes = dataStr.split('/');
-            if(partes.length !== 3) return '24 semanas';
-            const dataConsulta = new Date(partes[2], partes[1] - 1, partes[0]);
+            const iso = formatarDataParaISO(dataStr);
+            const dataConsulta = new Date(iso);
             const hoje = new Date();
             const diffTime = hoje - dataConsulta;
             const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
@@ -425,9 +464,8 @@
 
         function calcularMeses(dataStr) {
             if(!dataStr || dataStr === '-') return 0;
-            const partes = dataStr.split('/');
-            if(partes.length !== 3) return 0;
-            const dataConsulta = new Date(partes[2], partes[1] - 1, partes[0]);
+            const iso = formatarDataParaISO(dataStr);
+            const dataConsulta = new Date(iso);
             const hoje = new Date();
             const diffTime = hoje - dataConsulta;
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
@@ -453,10 +491,10 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "24 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
-                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", registrado: true, complemento: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", registrado: false, complemento: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
+                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "2026-01-10", periodo: "Manhã", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "2025-10-15", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "20 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
+                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "2025-05-05", periodo: "Manhã", bolsaFamilia: "Não", registrado: true, complemento: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", periodo: "Manhã", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "2025-12-12", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", periodo: "Tarde", motivo: "Busca ativa vacinação", contato: "Cartão verificado, falta Pentavalente"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -620,13 +658,25 @@
             }
         }
 
+        function checarAvisoVacinaModal() {
+            const val = document.getElementById('edit-semanas').value;
+            const num = extrairNumeroSemanas(val);
+            const aviso = document.getElementById('aviso-vacina-gestante');
+            if(num >= 14 && num <= 27) {
+                aviso.classList.remove('hidden');
+            } else {
+                aviso.classList.add('hidden');
+            }
+        }
+
         function abrirModalEdicao(id) {
             const p = pacientes.find(item => item.id === id);
             if(!p) return;
 
             document.getElementById('edit-id').value = p.id;
             document.getElementById('modal-titulo').innerText = `Prontuário: ${p.nome}`;
-            document.getElementById('edit-ultima-visita').value = p.ultimaConsulta || '';
+            document.getElementById('edit-ultima-visita').value = formatarDataParaISO(p.ultimaConsulta);
+            document.getElementById('edit-periodo').value = p.periodo || 'Manhã';
             document.getElementById('edit-complemento').value = p.complemento || '';
             document.getElementById('edit-motivo-busca').value = '';
             document.getElementById('edit-visita-contato').value = '';
@@ -653,6 +703,8 @@
             document.getElementById('edit-suplementos').value = p.suplementos || '';
             document.getElementById('edit-rede-apoio').value = p.redeApoio || '';
 
+            checarAvisoVacinaModal();
+
             const histDiv = document.getElementById('historico-prontuario');
             if(!p.historico || p.historico.length === 0) {
                 histDiv.innerHTML = `<span class="text-slate-500 px-2">Nenhum registro anterior no prontuário.</span>`;
@@ -660,7 +712,7 @@
                 histDiv.innerHTML = p.historico.map((h, index) => `
                     <div class="bg-slate-800 rounded border border-slate-700 overflow-hidden">
                         <button type="button" onclick="toggleSubmenuHistorico(${index})" class="w-full text-left px-3 py-1.5 bg-slate-800 hover:bg-slate-700 flex justify-between items-center text-emerald-400 font-bold transition">
-                            <span>📅 Data: ${h.data}</span>
+                            <span>📅 ${h.data} (${h.periodo || 'Manhã'})</span>
                             <span id="seta-hist-${index}" class="text-xs text-slate-400">▼</span>
                         </button>
                         <div id="corpo-hist-${index}" class="hidden p-2.5 bg-slate-900/80 border-t border-slate-700 space-y-1 text-slate-300">
@@ -710,17 +762,21 @@
             const p = pacientes.find(item => item.id === id);
             if(!p) return;
 
-            const novaData = document.getElementById('edit-ultima-visita').value || '-';
+            const dataIso = document.getElementById('edit-ultima-visita').value;
+            const dataBr = formatarDataParaBR(dataIso);
+            const periodoSelecionado = document.getElementById('edit-periodo').value;
+
+            p.ultimaConsulta = dataBr;
+            p.periodo = periodoSelecionado;
             p.complemento = document.getElementById('edit-complemento').value.trim();
             const novoMotivo = document.getElementById('edit-motivo-busca').value.trim();
             const novoContato = document.getElementById('edit-visita-contato').value.trim();
 
-            if(novaData !== '-') p.ultimaConsulta = novaData;
-
             if(novoMotivo !== '' || novoContato !== '') {
                 if(!p.historico) p.historico = [];
                 p.historico.unshift({
-                    data: novaData,
+                    data: dataBr,
+                    periodo: periodoSelecionado,
                     motivo: novoMotivo || '-',
                     contato: novoContato || '-'
                 });
@@ -821,6 +877,7 @@
 
                 let ultimoHistorico = (p.historico && p.historico.length > 0) ? p.historico[0] : {motivo: '-', contato: '-'};
                 const programaAbreviado = formatarProgramaAbreviado(p.programa);
+                const periodoVisita = p.periodo ? ` (${p.periodo})` : '';
 
                 const progU = (p.programa || "").toUpperCase();
                 let detalhesEspecificosHtml = '';
@@ -835,7 +892,11 @@
                 }
                 if (progU.includes('GESTA') || progU.includes('GES')) {
                     let semAtual = p.semanas || calcularSemanasGestante(p.ultimaConsulta);
+                    let numSem = extrairNumeroSemanas(semAtual);
+                    let alertaVacinaBadge = (numSem >= 14 && numSem <= 27) ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold">⚠️ Vacina Ideal (14-27s)</span>` : '';
+
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Semanas: <strong>${semAtual}</strong></span>`;
+                    detalhesEspecificosHtml += alertaVacinaBadge;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Risco: <strong>${p.risco || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Trabalha: <strong>${p.trabalha || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas: <strong>${p.vacinas || '-'}</strong></span>`;
@@ -874,7 +935,7 @@
                             <div><span class="text-slate-500 block">Info:</span> ${respCuidadorInfo}</div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita: <strong>${p.ultimaConsulta}</strong></span>
+                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
                             <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded">Últ. BA: <strong>${ultimoHistorico.motivo}</strong></span>
                             <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded">Últ. Contato: <strong>${ultimoHistorico.contato}</strong></span>
                             ${complementoHtml}
@@ -925,16 +986,17 @@
                             <tbody>
                 `;
                 agrupado[chave].forEach(p => {
-                    let ultimoH = (p.historico && p.historico.length > 0) ? p.historico[0] : {data: '-', motivo: '-', contato: '-'};
+                    let ultimoH = (p.historico && p.historico.length > 0) ? p.historico[0] : {data: '-', periodo: 'Manhã', motivo: '-', contato: '-'};
                     let progU = (p.programa || "").toUpperCase();
                     let semRel = progU.includes('GESTA') ? `Sem: ${p.semanas || calcularSemanasGestante(p.ultimaConsulta)} | Trabalha: ${p.trabalha || '-'}` : '';
                     let infoExtra = `Glicada: ${p.glicada || '-'} | Insulina: ${p.insulina || '-'} ${semRel} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
                     const progAbrev = formatarProgramaAbreviado(p.programa);
+                    const perAbrev = ultimoH.periodo ? ` (${ultimoH.periodo})` : '';
                     html += `
                         <tr>
                             <td class="font-medium">${p.nome}</td>
                             <td>${progAbrev}</td>
-                            <td><strong>[${ultimoH.data}]</strong><br><strong>BA:</strong> ${ultimoH.motivo}<br><strong>Contato:</strong> ${ultimoH.contato}</td>
+                            <td><strong>[${ultimoH.data}${perAbrev}]</strong><br><strong>BA:</strong> ${ultimoH.motivo}<br><strong>Contato:</strong> ${ultimoH.contato}</td>
                             <td>${p.complemento || '-'}</td>
                             <td>${infoExtra}</td>
                         </tr>
@@ -969,7 +1031,8 @@
                             enderecoOriginal: ruaOriginal.toUpperCase(),
                             endereco: formatarEnderecoParaIniciais(ruaOriginal),
                             numero: row['Nº'] || row['numero'] || 'S/N',
-                            ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
+                            ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || new Date().toISOString().split('T')[0],
+                            periodo: 'Manhã',
                             bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
                             registrado: false,
                             complemento: '',
