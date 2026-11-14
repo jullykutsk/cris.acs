@@ -177,7 +177,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família, Glicada, ECG, MAPA, Semanas Gestacionais, Risco, Vacinas, Suplementos, Rede Apoio, Ambiente.</p>
+                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -195,6 +195,96 @@
         </section>
 
     </main>
+
+    <!-- MODAL DE EDIÇÃO RÁPIDA -->
+    <div id="modal-edicao" class="hidden fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-base text-emerald-400" id="modal-titulo">Editar Informações Clínicas</h3>
+                <button onclick="fecharModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            </div>
+            
+            <input type="hidden" id="edit-id">
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Data da Última Visita / BA (DD/MM/AAAA)</label>
+                    <input type="text" id="edit-ultima-visita" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                </div>
+
+                <div id="bloco-dm" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Diabetes (DM)</span>
+                    <label class="block text-slate-400">Glicada (HbA1c)</label>
+                    <input type="text" id="edit-glicada" placeholder="Ex: 7.2%" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                </div>
+
+                <div id="bloco-has" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Hipertensão (HAS)</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400">ECG</label>
+                            <input type="text" id="edit-ecg" placeholder="Ex: OK / Pendente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400">MAPA</label>
+                            <input type="text" id="edit-mapa" placeholder="Ex: OK / Pendente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bloco-ges" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Gestante (GES)</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400">Semanas</label>
+                            <input type="text" id="edit-semanas" placeholder="Ex: 24 semanas" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400">Risco</label>
+                            <input type="text" id="edit-risco" placeholder="Ex: Habitual / Alto" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400">Vacinas (Gestante)</label>
+                        <input type="text" id="edit-vacinas-ges" placeholder="Ex: DTPA em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400">Suplementos</label>
+                        <input type="text" id="edit-suplementos" placeholder="Ex: Ferro, Ácido Fólico" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400">Rede de Apoio</label>
+                        <input type="text" id="edit-rede-apoio" placeholder="Ex: Possui apoio familiar" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    </div>
+                </div>
+
+                <div id="bloco-cr" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Criança (CR)</span>
+                    <label class="block text-slate-400">Vacinas Faltantes / Acompanhamento</label>
+                    <input type="text" id="edit-vacinas-cr" placeholder="Ex: Pentavalente pendente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                </div>
+
+                <div id="bloco-id" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Idoso (ID)</span>
+                    <label class="block text-slate-400">Vacinas (Idoso)</label>
+                    <input type="text" id="edit-vacinas-id" placeholder="Ex: Influenza em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mb-2">
+                    
+                    <label class="block text-slate-400 font-semibold">Avaliação de Ambiente (Marque o que se aplica):</label>
+                    <div class="grid grid-cols-1 gap-1.5 pt-1 text-slate-300">
+                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-1" class="accent-emerald-500"> <span>Risco de Quedas / Sem tapete antiderrapante</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-2" class="accent-emerald-500"> <span>Boa iluminação nos cômodos</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-3" class="accent-emerald-500"> <span>Presença de barras de apoio no banheiro</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-4" class="accent-emerald-500"> <span>Ambiente limpo e arejado</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-700">
+                <button onclick="fecharModal()" class="bg-slate-700 hover:bg-slate-600 text-xs px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                <button onclick="salvarEdicaoPaciente()" class="bg-emerald-600 hover:bg-emerald-500 text-xs px-4 py-2 rounded-lg font-bold text-white">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
 
     <!-- NAVEGAÇÃO INFERIOR -->
     <nav class="bg-slate-800 border-t border-slate-700 fixed bottom-0 left-0 right-0 z-30 no-print">
@@ -277,10 +367,10 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", glicada: "7.2%", ecg: "OK", mapa: "Pendente", semanas: "-", risco: "-", vacinas: "Em dia", suplementos: "-", redeApoio: "-", ambiente: "Seguro" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", glicada: "-", ecg: "-", mapa: "-", semanas: "24 semanas", risco: "Alto Risco", vacinas: "Pendente DTPA", suplementos: "Ferro / Ácido Fólico", redeApoio: "Possui", ambiente: "-" },
-                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", glicada: "-", ecg: "-", mapa: "-", semanas: "-", risco: "-", vacinas: "Influenza em dia", suplementos: "-", redeApoio: "-", ambiente: "Risco de queda (sem tapete antiderrapante)" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", glicada: "-", ecg: "-", mapa: "-", semanas: "-", risco: "-", vacinas: "Pentavalente em atraso", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "Adequado" }
+                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, glicada: "7.2%", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
+                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "15/10/2025", bolsaFamilia: "Sim", registrado: false, glicada: "", ecg: "", mapa: "", semanas: "24 semanas", risco: "Alto Risco", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
+                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "05/05/2025", bolsaFamilia: "Não", registrado: true, glicada: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
+                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "12/12/2025", bolsaFamilia: "Sim", registrado: false, glicada: "", ecg: "", mapa: "", semanas: "", risco: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -436,6 +526,92 @@
             renderizarPacientes();
         }
 
+        // Função para alternar o registro direto no card
+        function alternarRegistroPaciente(id) {
+            const p = pacientes.find(item => item.id === id);
+            if(p) {
+                p.registrado = !p.registrado;
+                localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+            }
+        }
+
+        // FUNÇÕES DA MODAL DE EDIÇÃO
+        function abrirModalEdicao(id) {
+            const p = pacientes.find(item => item.id === id);
+            if(!p) return;
+
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('modal-titulo').innerText = `Editar: ${p.nome}`;
+            document.getElementById('edit-ultima-visita').value = p.ultimaConsulta || '';
+            document.getElementById('edit-glicada').value = p.glicada || '';
+            document.getElementById('edit-ecg').value = p.ecg || '';
+            document.getElementById('edit-mapa').value = p.mapa || '';
+            document.getElementById('edit-semanas').value = p.semanas || '';
+            document.getElementById('edit-risco').value = p.risco || '';
+            document.getElementById('edit-vacinas-ges').value = p.vacinas || '';
+            document.getElementById('edit-vacinas-cr').value = p.vacinas || '';
+            document.getElementById('edit-vacinas-id').value = p.vacinas || '';
+            document.getElementById('edit-suplementos').value = p.suplementos || '';
+            document.getElementById('edit-rede-apoio').value = p.redeApoio || '';
+
+            const ambStr = p.ambiente || '';
+            document.getElementById('amb-1').checked = ambStr.includes('Queda') || ambStr.includes('tapete');
+            document.getElementById('amb-2').checked = ambStr.includes('iluminação');
+            document.getElementById('amb-3').checked = ambStr.includes('banheiro') || ambStr.includes('barras');
+            document.getElementById('amb-4').checked = ambStr.includes('limpo') || ambStr.includes('arejado');
+
+            const progU = (p.programa || "").toUpperCase();
+            document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET') && !progU.includes('DM'));
+            document.getElementById('bloco-has').classList.toggle('hidden', !progU.includes('HIPERTENS') && !progU.includes('HAS'));
+            document.getElementById('bloco-ges').classList.toggle('hidden', !progU.includes('GESTA') && !progU.includes('GES'));
+            document.getElementById('bloco-cr').classList.toggle('hidden', !progU.includes('CRIANÇA') && !progU.includes('CR'));
+            document.getElementById('bloco-id').classList.toggle('hidden', !progU.includes('IDOSO') && !progU.includes('ID'));
+
+            document.getElementById('modal-edicao').classList.remove('hidden');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-edicao').classList.add('hidden');
+        }
+
+        function salvarEdicaoPaciente() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            const p = pacientes.find(item => item.id === id);
+            if(!p) return;
+
+            p.ultimaConsulta = document.getElementById('edit-ultima-visita').value || '-';
+            const progU = (p.programa || "").toUpperCase();
+
+            if (progU.includes('DIABET') || progU.includes('DM')) p.glicada = document.getElementById('edit-glicada').value;
+            if (progU.includes('HIPERTENS') || progU.includes('HAS')) {
+                p.ecg = document.getElementById('edit-ecg').value;
+                p.mapa = document.getElementById('edit-mapa').value;
+            }
+            if (progU.includes('GESTA') || progU.includes('GES')) {
+                p.semanas = document.getElementById('edit-semanas').value;
+                p.risco = document.getElementById('edit-risco').value;
+                p.vacinas = document.getElementById('edit-vacinas-ges').value;
+                p.suplementos = document.getElementById('edit-suplementos').value;
+                p.redeApoio = document.getElementById('edit-rede-apoio').value;
+            }
+            if (progU.includes('CRIANÇA') || progU.includes('CR')) {
+                p.vacinas = document.getElementById('edit-vacinas-cr').value;
+            }
+            if (progU.includes('IDOSO') || progU.includes('ID')) {
+                p.vacinas = document.getElementById('edit-vacinas-id').value;
+                let ambientesMarcados = [];
+                if(document.getElementById('amb-1').checked) ambientesMarcados.push("Risco de quedas");
+                if(document.getElementById('amb-2').checked) ambientesMarcados.push("Boa iluminação");
+                if(document.getElementById('amb-3').checked) ambientesMarcados.push("Barras no banheiro");
+                if(document.getElementById('amb-4').checked) ambientesMarcados.push("Ambiente limpo/arejado");
+                p.ambiente = ambientesMarcados.length > 0 ? ambientesMarcados.join(" | ") : "OK";
+            }
+
+            localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+            fecharModal();
+            renderizarPacientes();
+        }
+
         function renderizarPacientes() {
             atualizarEstatisticas();
 
@@ -488,8 +664,6 @@
                 if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
 
                 const progU = (p.programa || "").toUpperCase();
-
-                // Monta blocos específicos por tipo de programa de forma dinâmica
                 let detalhesEspecificosHtml = '';
                 
                 if (progU.includes('DIABET') || progU.includes('DM')) {
@@ -502,25 +676,32 @@
                 if (progU.includes('GESTA') || progU.includes('GES')) {
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Semanas: <strong>${p.semanas || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Risco: <strong>${p.risco || '-'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas: <strong>${p.vacinas || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Suplementos: <strong>${p.suplementos || '-'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Rede de Apoio: <strong>${p.redeApoio || '-'}</strong></span>`;
                 }
                 if (progU.includes('CRIANÇA') || progU.includes('CR')) {
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas (CR): <strong>${p.vacinas || 'Checar'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas Faltantes: <strong>${p.vacinas || 'Em dia'}</strong></span>`;
                 }
                 if (progU.includes('IDOSO') || progU.includes('ID')) {
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas (ID): <strong>${p.vacinas || 'Checar'}</strong></span>`;
+                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas: <strong>${p.vacinas || 'Em dia'}</strong></span>`;
                     detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Ambiente: <strong>${p.ambiente || 'OK'}</strong></span>`;
                 }
 
                 return `
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative">
                         <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${p.programa}</span>
-                                <h3 class="font-bold text-base text-slate-100">${p.nome}</h3>
+                            <div class="flex items-center space-x-2.5">
+                                <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer" title="Marcar como registrado no sistema">
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${p.programa}</span>
+                                    <h3 class="font-bold text-base text-slate-100">${p.nome}</h3>
+                                </div>
                             </div>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${badgeClass}">Visita: ${statusVisita}</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${badgeClass}">Visita: ${statusVisita}</span>
+                                <button onclick="abrirModalEdicao(${p.id})" class="bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2 py-1 rounded-lg transition" title="Editar dados clínicos">✏️ Editar</button>
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
                             <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo}</div>
@@ -569,14 +750,14 @@
                                     <th>Nome Usuário</th>
                                     <th>Programa</th>
                                     <th>Últ. Visita</th>
-                                    <th>Dados Específicos / Saúde</th>
+                                    <th>Dados Específicos / Clínicos</th>
                                     <th>Observações / Anotações</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
                 agrupado[chave].forEach(p => {
-                    let infoExtra = `Glicada: ${p.glicada || '-'} | ECG/MAPA: ${p.ecg}/${p.mapa} | Sem: ${p.semanas} | Vac/Amb: ${p.vacinas}/${p.ambiente}`;
+                    let infoExtra = `Glicada: ${p.glicada || '-'} | Sem: ${p.semanas} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
                     html += `
                         <tr>
                             <td class="font-medium">${p.nome}</td>
@@ -618,20 +799,13 @@
                             numero: row['Nº'] || row['numero'] || 'S/N',
                             ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || '-',
                             bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
-                            glicada: row['Glicada'] || row['glicada'] || '-',
-                            ecg: row['ECG'] || row['ecg'] || '-',
-                            mapa: row['MAPA'] || row['mapa'] || '-',
-                            semanas: row['Semanas'] || row['semanas'] || '-',
-                            risco: row['Risco'] || row['risco'] || '-',
-                            vacinas: row['Vacinas'] || row['vacinas'] || '-',
-                            suplementos: row['Suplementos'] || row['suplementos'] || '-',
-                            redeApoio: row['Rede Apoio'] || row['redeApoio'] || '-',
-                            ambiente: row['Ambiente'] || row['ambiente'] || '-'
+                            registrado: false,
+                            glicada: '', ecg: '', mapa: '', semanas: '', risco: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
                         };
                     });
 
                     localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
-                    alert(`Sucesso! ${pacientes.length} registros importados com os dados clínicos específicos.`);
+                    alert(`Sucesso! ${pacientes.length} registros importados.`);
                     mudarAba('pacientes');
                     renderizarPacientes();
                 }
