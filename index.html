@@ -61,11 +61,11 @@
                 </div>
             </div>
 
-            <!-- FILTROS DE BUSCA E BLOCOS DE RUAS -->
+            <!-- FILTROS DE BUSCA E BLOCOS DE RUAS (SOMENTE INICIAIS) -->
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col sm:flex-row gap-2 no-print">
                 <input type="text" id="input-busca" oninput="renderizarPacientes()" placeholder="Buscar por nome do usuário..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                 <select id="select-rua-filtro" onchange="renderizarPacientes()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    <option value="">Todas as Ruas / Blocos</option>
+                    <option value="">Todos os Blocos e Ruas</option>
                 </select>
             </div>
 
@@ -83,7 +83,7 @@
                 
                 <div class="flex flex-col sm:flex-row gap-3">
                     <select id="select-rua-relatorio" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100">
-                        <option value="">Todas as Ruas / Blocos (Microárea Completa)</option>
+                        <option value="">Todos os Blocos e Ruas (Microárea Completa)</option>
                     </select>
                     <button onclick="gerarRelatorioA4()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
                         <span>🖨️ Imprimir / Gerar PDF A4</span>
@@ -111,7 +111,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Importe sua planilha contendo as colunas exatas: <strong>Programas, Usuário, Data de Nascimento, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Ativo/Inativo, Bolsa Família</strong> (junto com Exames, Consultas, ECG e MAPA). O campo Endereço deve corresponder aos nomes dos 3 blocos informados.</p>
+                <p class="text-xs text-slate-400">Importe sua planilha contendo as colunas exatas: <strong>Programas, Usuário, Data de Nascimento, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Ativo/Inativo, Bolsa Família</strong> (junto com Exames, Consultas, ECG e MAPA).</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -151,29 +151,29 @@
 
     <!-- SCRIPT DE LÓGICA -->
     <script>
-        // Definição Oficial dos Blocos e Ruas
+        // Definição Oficial dos Blocos e Ruas (com as iniciais formatadas)
         const BLOCOS_RUAS = {
             "Bloco 01": [
-                "RUA ANTONIO MATHEUS AM",
-                "RUA PIERINA BERTUZZI BORIN PBB",
-                "RUA NATHALIA BOZZA NB",
-                "RUA EDUARDO PINTO DA ROCHA",
-                "RUA ROSA CAVICHIOLO NICHELE",
-                "RUA ANTONIO BAGGIO",
-                "RUA BERMIVAL ANTONIO BOZZA"
+                { nome: "RUA ANTONIO MATHEUS", iniciais: "RAM" },
+                { nome: "RUA PIERINA BERTUZZI BORIN", iniciais: "RPBB" },
+                { nome: "RUA NATHALIA BOZZA", iniciais: "RNB" },
+                { nome: "RUA EDUARDO PINTO DA ROCHA", initialise: "REPR" },
+                { nome: "RUA ROSA CAVICHIOLO NICHELE", iniciais: "RRCN" },
+                { nome: "RUA ANTONIO BAGGIO", iniciais: "RAB" },
+                { nome: "RUA BERMIVAL ANTONIO BOZZA", iniciais: "RBAB" }
             ],
             "Bloco 02": [
-                "RUA PAULO ESTEPHANO CAVICHIOLO",
-                "RUA JOSE ANTONIO NICHELE",
-                "RUA AGOSTINHO ZANIOLO",
-                "RUA LUIZ NICHELE"
+                { nome: "RUA PAULO ESTEPHANO CAVICHIOLO", iniciais: "RPEC" },
+                { nome: "RUA JOSE ANTONIO NICHELE", iniciais: "RJAN" },
+                { nome: "RUA AGOSTINHO ZANIOLO", iniciais: "RAZ" },
+                { nome: "RUA LUIZ NICHELE", iniciais: "RLN" }
             ],
             "Bloco 03": [
-                "RUA ANGELO GAI",
-                "RUA ANGELA GABARDO PAROLIN",
-                "RUA EXPEDICIONARIO OCTAVIO ZONTTA",
-                "RUA SANTA TEREZINHA",
-                "RUA RIDE BOZA"
+                { nome: "RUA ANGELO GAI", iniciais: "RAG" },
+                { nome: "RUA ANGELA GABARDO PAROLIN", iniciais: "RAGP" },
+                { nome: "RUA EXPEDICIONARIO OCTAVIO ZONTTA", iniciais: "REOZ" },
+                { nome: "RUA SANTA TEREZINHA", iniciais: "RST" },
+                { nome: "RUA RIDE BOZA", iniciais: "RRB" }
             ]
         };
 
@@ -183,7 +183,7 @@
         // Dados de exemplo caso esteja vazio
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "RUA ANTONIO MATHEUS AM", numero: "120", ultimaConsulta: "10/01/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
+                { id: 1, programa: "Hipertensos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "RUA ANTONIO MATHEUS", numero: "120", ultimaConsulta: "10/01/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
                 { id: 2, programa: "Hipertensos / Diabéticos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "RUA PAULO ESTEPHANO CAVICHIOLO", numero: "45", ultimaConsulta: "05/11/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
                 { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "RUA ANGELO GAI", numero: "12", ultimaConsulta: "18/02/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
                 { id: 4, programa: "Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "RUA EDUARDO PINTO DA ROCHA", numero: "122", ultimaConsulta: "12/12/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
@@ -215,12 +215,12 @@
                 const sel = document.getElementById(id);
                 const atual = sel.value;
                 
-                let html = `<option value="">Todas as Ruas / Blocos</option>`;
+                let html = `<option value="">Todos os Blocos e Ruas</option>`;
                 
                 for(let bloco in BLOCOS_RUAS) {
                     html += `<optgroup label="${bloco}">`;
-                    BLOCOS_RUAS[bloco].forEach(rua => {
-                        html += `<option value="${rua}">${rua}</option>`;
+                    BLOCOS_RUAS[bloco].forEach(ruaObj => {
+                        html += `<option value="${ruaObj.nome}">${ruaObj.iniciais} - ${ruaObj.nome}</option>`;
                     });
                     html += `</optgroup>`;
                 }
@@ -304,7 +304,6 @@
 
             let html = '';
             for(let endereco in agrupado) {
-                // Iniciais do endereço para privacidade máxima na impressão
                 let iniciaisEnd = endereco.split(' ').map(w => w[0]).join('').toUpperCase() + '...';
                 
                 html += `
