@@ -61,11 +61,11 @@
                 </div>
             </div>
 
-            <!-- FILTROS DE BUSCA E RUAS -->
+            <!-- FILTROS DE BUSCA E BLOCOS DE RUAS -->
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col sm:flex-row gap-2 no-print">
                 <input type="text" id="input-busca" oninput="renderizarPacientes()" placeholder="Buscar por nome do usuário..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                 <select id="select-rua-filtro" onchange="renderizarPacientes()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    <option value="">Todas as Ruas / Endereços</option>
+                    <option value="">Todas as Ruas / Blocos</option>
                 </select>
             </div>
 
@@ -79,11 +79,11 @@
         <section id="tab-relatorios" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 no-print">
                 <h2 class="font-bold text-lg mb-2">Relatório Oficial para Impressão (A4)</h2>
-                <p class="text-xs text-slate-400 mb-4">Gera a listagem agrupada por núcleo familiar, exibindo apenas as iniciais do endereço e dados essenciais para acompanhamento em campo.</p>
+                <p class="text-xs text-slate-400 mb-4">Gera a listagem agrupada por núcleo familiar e blocos/ruas, exibindo apenas as iniciais do endereço e dados essenciais para acompanhamento em campo.</p>
                 
                 <div class="flex flex-col sm:flex-row gap-3">
                     <select id="select-rua-relatorio" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100">
-                        <option value="">Todas as Ruas (Microárea Completa)</option>
+                        <option value="">Todas as Ruas / Blocos (Microárea Completa)</option>
                     </select>
                     <button onclick="gerarRelatorioA4()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
                         <span>🖨️ Imprimir / Gerar PDF A4</span>
@@ -111,7 +111,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Importe sua planilha contendo as colunas exatas: <strong>Programas, Usuário, Data de Nascimento, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Ativo/Inativo, Bolsa Família</strong> (junto com Exames, Consultas, ECG e MAPA).</p>
+                <p class="text-xs text-slate-400">Importe sua planilha contendo as colunas exatas: <strong>Programas, Usuário, Data de Nascimento, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Ativo/Inativo, Bolsa Família</strong> (junto com Exames, Consultas, ECG e MAPA). O campo Endereço deve corresponder aos nomes dos 3 blocos informados.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -151,16 +151,42 @@
 
     <!-- SCRIPT DE LÓGICA -->
     <script>
+        // Definição Oficial dos Blocos e Ruas
+        const BLOCOS_RUAS = {
+            "Bloco 01": [
+                "RUA ANTONIO MATHEUS AM",
+                "RUA PIERINA BERTUZZI BORIN PBB",
+                "RUA NATHALIA BOZZA NB",
+                "RUA EDUARDO PINTO DA ROCHA",
+                "RUA ROSA CAVICHIOLO NICHELE",
+                "RUA ANTONIO BAGGIO",
+                "RUA BERMIVAL ANTONIO BOZZA"
+            ],
+            "Bloco 02": [
+                "RUA PAULO ESTEPHANO CAVICHIOLO",
+                "RUA JOSE ANTONIO NICHELE",
+                "RUA AGOSTINHO ZANIOLO",
+                "RUA LUIZ NICHELE"
+            ],
+            "Bloco 03": [
+                "RUA ANGELO GAI",
+                "RUA ANGELA GABARDO PAROLIN",
+                "RUA EXPEDICIONARIO OCTAVIO ZONTTA",
+                "RUA SANTA TEREZINHA",
+                "RUA RIDE BOZA"
+            ]
+        };
+
         let pacientes = JSON.parse(localStorage.getItem('acs_pacientes_oficial')) || [];
         let filtroAtualStatus = 'TODOS';
 
         // Dados de exemplo caso esteja vazio
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "R. das Flores", numero: "120", ultimaConsulta: "10/01/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
-                { id: 2, programa: "Hipertensos / Diabéticos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "Av. Brasil", numero: "45", ultimaConsulta: "05/11/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
-                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "R. Projetada", numero: "12", ultimaConsulta: "18/02/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
-                { id: 4, programa: "Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "R. das Flores", numero: "122", ultimaConsulta: "12/12/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
+                { id: 1, programa: "Hipertensos", nome: "Maria G. S.", idade: 72, sexo: "F", endereco: "RUA ANTONIO MATHEUS AM", numero: "120", ultimaConsulta: "10/01/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "15/07/2026", proximaConsulta: "20/08/2026", ecg: "Pendente", mapa: "OK" },
+                { id: 2, programa: "Hipertensos / Diabéticos", nome: "Rosa A. P.", idade: 81, sexo: "F", endereco: "RUA PAULO ESTEPHANO CAVICHIOLO", numero: "45", ultimaConsulta: "05/11/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "10/06/2026", proximaConsulta: "12/07/2026", ecg: "OK", mapa: "Pendente" },
+                { id: 3, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", endereco: "RUA ANGELO GAI", numero: "12", ultimaConsulta: "18/02/2026", status: "Ativo", bolsaFamilia: "Sim", proximoExame: "30/05/2026", proximaConsulta: "02/06/2026", ecg: "N/A", mapa: "N/A" },
+                { id: 4, programa: "Idosos", nome: "João F. S.", idade: 65, sexo: "M", endereco: "RUA EDUARDO PINTO DA ROCHA", numero: "122", ultimaConsulta: "12/12/2025", status: "Ativo", bolsaFamilia: "Não", proximoExame: "20/07/2026", proximaConsulta: "25/08/2026", ecg: "Pendente", mapa: "Pendente" }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -184,12 +210,22 @@
             document.getElementById('stat-bolsa').innerText = pacientes.filter(p => p.bolsaFamilia === 'Sim').length;
         }
 
-        function popularFiltroRuas() {
-            const ruas = [...new Set(pacientes.map(p => p.endereco))];
+        function popularFiltroBlocosRuas() {
             ['select-rua-filtro', 'select-rua-relatorio'].forEach(id => {
                 const sel = document.getElementById(id);
                 const atual = sel.value;
-                sel.innerHTML = `<option value="">Todas as Ruas / Endereços</option>` + ruas.map(r => `<option value="${r}">${r}</option>`).join('');
+                
+                let html = `<option value="">Todas as Ruas / Blocos</option>`;
+                
+                for(let bloco in BLOCOS_RUAS) {
+                    html += `<optgroup label="${bloco}">`;
+                    BLOCOS_RUAS[bloco].forEach(rua => {
+                        html += `<option value="${rua}">${rua}</option>`;
+                    });
+                    html += `</optgroup>`;
+                }
+                
+                sel.innerHTML = html;
                 sel.value = atual;
             });
         }
@@ -201,7 +237,7 @@
 
         function renderizarPacientes() {
             atualizarEstatisticas();
-            popularFiltroRuas();
+            popularFiltroBlocosRuas();
 
             const busca = document.getElementById('input-busca').value.toLowerCase();
             const ruaFiltro = document.getElementById('select-rua-filtro').value;
@@ -209,7 +245,7 @@
 
             let filtrados = pacientes.filter(p => {
                 const matchBusca = p.nome.toLowerCase().includes(busca);
-                const matchRua = !ruaFiltro || p.endereco === ruaFiltro;
+                const matchRua = !ruaFiltro || p.endereco.trim().toUpperCase() === ruaFiltro.trim().toUpperCase();
                 let matchStatus = true;
                 if(filtroAtualStatus === 'URGENTE') matchStatus = (p.ecg === 'Pendente' || p.mapa === 'Pendente');
                 if(filtroAtualStatus === 'ATIVO') matchStatus = (p.status === 'Ativo');
@@ -251,9 +287,9 @@
             const ruaFiltro = document.getElementById('select-rua-relatorio').value;
             const container = document.getElementById('corpo-tabela-relatorio');
 
-            let filtrados = pacientes.filter(p => !ruaFiltro || p.endereco === ruaFiltro);
+            let filtrados = pacientes.filter(p => !ruaFiltro || p.endereco.trim().toUpperCase() === ruaFiltro.trim().toUpperCase());
 
-            // Agrupar por Endereço / Família
+            // Agrupar por Endereço / Rua
             let agrupado = {};
             filtrados.forEach(p => {
                 let chave = `${p.endereco}, Nº ${p.numero}`;
