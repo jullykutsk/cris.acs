@@ -6,7 +6,6 @@
     <title>Gestão ACS - Cristiane Gonçalves Kutsk</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <!-- SheetJS para ler planilhas XLSX nativamente -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -43,12 +42,8 @@
             border-color: #cbd5e1 !important;
             color: #0f172a !important;
         }
-        body.light-theme .caixa-info-paciente .label-info {
-            color: #475569 !important;
-        }
-        body.light-theme .caixa-info-paciente .valor-info {
-            color: #0f172a !important;
-        }
+        body.light-theme .caixa-info-paciente .label-info { color: #475569 !important; }
+        body.light-theme .caixa-info-paciente .valor-info { color: #0f172a !important; }
 
         body.light-theme .badge-visita {
             background-color: #e2e8f0 !important;
@@ -86,9 +81,7 @@
             background-color: #e2e8f0 !important;
             color: #0f172a !important;
         }
-        body.light-theme table td {
-            border-color: #cbd5e1 !important;
-        }
+        body.light-theme table td { border-color: #cbd5e1 !important; }
 
         @media print {
             body { background: white !important; color: black !important; }
@@ -306,7 +299,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg text-white">Importar Planilha Oficial (.xlsx ou .csv)</h2>
-                <p class="text-xs text-slate-300">O sistema filtrará automaticamente apenas os pacientes da microárea <strong>CRISTIANE GONCALVES KUTSK</strong> que se enquadram nos indicadores (Idosos, Crianças ≤ 2 anos, Gestantes, Hipertensos, Diabéticos).</p>
+                <p class="text-xs text-slate-300">Importe a planilha oficial da sua microárea. O sistema organizará automaticamente os pacientes nos indicadores (Idosos, Crianças ≤ 2 anos, Gestantes, Hipertensos, Diabéticos).</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-excel" accept=".xlsx, .xls, .csv" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -556,25 +549,14 @@
             const prog = (p.programa || "").toUpperCase();
             const classif = (p.classificacao || "").toUpperCase();
             
-            // 1. Idosos
             if(prog.includes('IDOSO')) return true;
-
-            // 2. Hipertensos
             if(prog.includes('HIPERTENSO')) return true;
-
-            // 3. Diabéticos
             if(prog.includes('DIABETICO')) return true;
-
-            // 4. Gestantes (qualquer classificação de gestante)
             if(classif.includes('GESTANTE')) return true;
-
-            // 5. Crianças até 2 anos (1 ano, 11 meses e 29 dias ou menos)
             if(prog.includes('CRIANCA')) {
                 const im = calcularIdadeAnosMesesDias(p.dtNascimento);
-                // Menor que 2 anos de idade (anos < 2)
                 if(im.anos < 2) return true;
             }
-
             return false;
         }
 
@@ -617,7 +599,7 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, microArea: "00 - CRISTIANE GONCALVES KUTSK", programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
+                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
             ];
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
         }
@@ -867,7 +849,7 @@
             }
 
             const progU = (p.programa || "").toUpperCase();
-            document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET'));
+            document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABETICO'));
 
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
@@ -943,7 +925,7 @@
             }
 
             const progU = (p.programa || "").toUpperCase();
-            if (progU.includes('DIABET')) {
+            if (progU.includes('DIABETICO')) {
                 p.hemoglobinaGlicosilada = document.getElementById('edit-glicada').value;
                 p.dataColeta = document.getElementById('edit-datacoleta').value;
             }
@@ -1272,18 +1254,13 @@
                 mapaExistente[chaveUnica] = p;
             });
 
-            // FILTRA APENAS A MICROÁREA DA CRISTIANE E OS PACIENTES QUE ATENDEM AOS INDICADORES
+            // FILTRA APENAS OS PACIENTES QUE ATENDEM AOS 5 INDICADORES SOLICITADOS
             let filtradosNovos = dadosNovos.filter(row => {
-                const microArea = String(row['Micro Área'] || row['MICRO ÁREA'] || row['microArea'] || '').toUpperCase();
-                if (!microArea.includes('CRISTIANE GONCALVES KUTSK')) return false;
-
-                // Mock temporário de objeto para testar os critérios
                 const tempP = {
                     programa: row['Programa'] || row['PROGRAMA'] || '',
                     classificacao: row['Classificação'] || row['CLASSIFICAÇÃO'] || '',
                     dtNascimento: row['Dt Nascimento'] || row['DT NASCIMENTO'] || ''
                 };
-
                 return atendeCriterioIndicador(tempP);
             });
 
@@ -1328,7 +1305,6 @@
                 } else {
                     return {
                         id: idx + 1,
-                        microArea: '00 - CRISTIANE GONCALVES KUTSK',
                         programa: progVal,
                         classificacao: classVal,
                         nome: nomeNovo,
@@ -1355,7 +1331,7 @@
             });
 
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
-            alert(`Sucesso! Carregados ${pacientes.length} pacientes de indicadores da microárea da Cristiane (mantendo anotações anteriores).`);
+            alert(`Sucesso! Carregados ${pacientes.length} pacientes de indicadores (mantendo anotações anteriores).`);
             mudarAba('pacientes');
             renderizarPacientes();
         }
