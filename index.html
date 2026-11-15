@@ -299,7 +299,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg text-white">Importar Planilha Oficial (.xlsx ou .csv)</h2>
-                <p class="text-xs text-slate-300">Importe a planilha oficial da sua microárea. O sistema organizará automaticamente os pacientes nos indicadores (Idosos, Crianças ≤ 2 anos, Gestantes, Hipertensos, Diabéticos).</p>
+                <p class="text-xs text-slate-300">Importe a planilha. O sistema considerará apenas os pacientes dos indicadores que residem estritamente nos <strong>Blocos 01, 02 e 03</strong> da microárea.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-excel" accept=".xlsx, .xls, .csv" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -471,6 +471,12 @@
             ]
         };
 
+        // Lista única de nomes de ruas válidas dos 3 blocos
+        const RUAS_VALIDAS_MICROAREA = new Set();
+        Object.values(BLOCOS_RUAS).forEach(bloco => {
+            bloco.forEach(r => RUAS_VALIDAS_MICROAREA.add(r.nome.toUpperCase()));
+        });
+
         let pacientes = JSON.parse(localStorage.getItem('acs_pacientes_cristiane')) || [];
         let filtroAtualStatus = 'TODOS';
         let filtroAtualPrograma = 'TODOS';
@@ -556,6 +562,15 @@
             if(prog.includes('CRIANCA')) {
                 const im = calcularIdadeAnosMesesDias(p.dtNascimento);
                 if(im.anos < 2) return true;
+            }
+            return false;
+        }
+
+        function ehRuaValida(nomeRua) {
+            if(!nomeRua) return false;
+            const limpo = String(nomeRua).trim().toUpperCase();
+            for(let ruaPermitida of RUAS_VALIDAS_MICROAREA) {
+                if(limpo === ruaPermitida || limpo.includes(ruaPermitida)) return true;
             }
             return false;
         }
@@ -1254,8 +1269,11 @@
                 mapaExistente[chaveUnica] = p;
             });
 
-            // FILTRA APENAS OS PACIENTES QUE ATENDEM AOS 5 INDICADORES SOLICITADOS
+            // FILTRA APENAS OS PACIENTES QUE ESTÃO NOS BLOCOS E ATENDEM AOS INDICADORES
             let filtradosNovos = dadosNovos.filter(row => {
+                const rua = row['Endereço'] || row['ENDEREÇO'] || '';
+                if (!ehRuaValida(rua)) return false;
+
                 const tempP = {
                     programa: row['Programa'] || row['PROGRAMA'] || '',
                     classificacao: row['Classificação'] || row['CLASSIFICAÇÃO'] || '',
@@ -1331,7 +1349,7 @@
             });
 
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
-            alert(`Sucesso! Carregados ${pacientes.length} pacientes de indicadores (mantendo anotações anteriores).`);
+            alert(`Sucesso! Carregados ${pacientes.length} pacientes válidos dos blocos (mantendo anotações anteriores).`);
             mudarAba('pacientes');
             renderizarPacientes();
         }
