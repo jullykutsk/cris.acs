@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão ACS - Cristiane Gonçalves Kutsk</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -295,17 +293,62 @@
             </div>
         </section>
 
-        <!-- ABA CONFIGURAÇÕES -->
+        <!-- ABA CONFIGURAÇÕES / COPIAR E COLAR POR INDICADOR -->
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
-                <h2 class="font-bold text-lg text-white">Importar Planilha Oficial (.xlsx ou .csv)</h2>
-                <p class="text-xs text-slate-300">Importe a planilha. O sistema considerará apenas os pacientes dos indicadores que residem estritamente nos <strong>Blocos 01, 02 e 03</strong> da microárea.</p>
+                <h2 class="font-bold text-lg text-white">📋 Atualizar por Copiar e Colar (Por Indicador)</h2>
+                <p class="text-xs text-slate-300">Selecione o indicador abaixo, selecione as linhas direto na planilha do sistema da prefeitura, copie (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. O sistema atualizará os pacientes e filtrará apenas as ruas dos seus blocos.</p>
                 
-                <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
-                    <input type="file" id="input-arquivo-excel" accept=".xlsx, .xls, .csv" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
-                    <div class="space-y-2">
-                        <span class="text-3xl">📁</span>
-                        <p class="text-sm font-medium text-white">Clique aqui ou arraste a planilha oficial (.xlsx)</p>
+                <!-- SUBMENUS DE INDICADORES PARA COLAR -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <!-- GESTANTES -->
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs text-pink-400">🤰 Gestantes</span>
+                            <span id="qtd-gestantes-coladas" class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-semibold">0 cadastrados</span>
+                        </div>
+                        <textarea id="texto-colar-Gestantes" rows="3" placeholder="Cole aqui (Ctrl+V) a tabela de gestantes..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-pink-500"></textarea>
+                        <button onclick="processarColagemIndicador('Gestantes', 'SAUDE INTEGRAL DA MULHER', 'GESTANTE')" class="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-1.5 rounded-lg text-xs transition">Salvar Gestantes</button>
+                    </div>
+
+                    <!-- HIPERTENSOS -->
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs text-red-400">❤️ Hipertensos</span>
+                            <span id="qtd-hipertensos-coladas" class="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-semibold">0 cadastrados</span>
+                        </div>
+                        <textarea id="texto-colar-Hipertensos" rows="3" placeholder="Cole aqui (Ctrl+V) a tabela de hipertensos..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500"></textarea>
+                        <button onclick="processarColagemIndicador('Hipertensos', 'HIPERTENSO', 'HAS')" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-1.5 rounded-lg text-xs transition">Salvar Hipertensos</button>
+                    </div>
+
+                    <!-- DIABÉTICOS -->
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs text-blue-400">🔹 Diabéticos</span>
+                            <span id="qtd-diabeticos-coladas" class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-semibold">0 cadastrados</span>
+                        </div>
+                        <textarea id="texto-colar-Diabeticos" rows="3" placeholder="Cole aqui (Ctrl+V) a tabela de diabéticos..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-blue-500"></textarea>
+                        <button onclick="processarColagemIndicador('Diabeticos', 'DIABETICO', 'DM')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 rounded-lg text-xs transition">Salvar Diabéticos</button>
+                    </div>
+
+                    <!-- CRIANÇAS -->
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs text-amber-400">👶 Crianças (≤ 2 anos)</span>
+                            <span id="qtd-criancas-coladas" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-semibold">0 cadastrados</span>
+                        </div>
+                        <textarea id="texto-colar-Criancas" rows="3" placeholder="Cole aqui (Ctrl+V) a tabela de crianças..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+                        <button onclick="processarColagemIndicador('Criancas', 'CRIANCA', 'ROTINA')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 rounded-lg text-xs transition">Salvar Crianças</button>
+                    </div>
+
+                    <!-- IDOSOS (Ocupa 2 colunas em telas maiores) -->
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2 sm:col-span-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs text-emerald-400">👴 Idosos</span>
+                            <span id="qtd-idosos-coladas" class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-semibold">0 cadastrados</span>
+                        </div>
+                        <textarea id="texto-colar-Idosos" rows="3" placeholder="Cole aqui (Ctrl+V) a tabela de idosos..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+                        <button onclick="processarColagemIndicador('Idosos', 'SAUDE DO IDOSO', 'ROBUSTO')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 rounded-lg text-xs transition">Salvar Idosos</button>
                     </div>
                 </div>
 
@@ -471,7 +514,6 @@
             ]
         };
 
-        // Lista única de nomes de ruas válidas dos 3 blocos
         const RUAS_VALIDAS_MICROAREA = new Set();
         Object.values(BLOCOS_RUAS).forEach(bloco => {
             bloco.forEach(r => RUAS_VALIDAS_MICROAREA.add(r.nome.toUpperCase()));
@@ -551,21 +593,6 @@
             return { anos, meses, dias };
         }
 
-        function atendeCriterioIndicador(p) {
-            const prog = (p.programa || "").toUpperCase();
-            const classif = (p.classificacao || "").toUpperCase();
-            
-            if(prog.includes('IDOSO')) return true;
-            if(prog.includes('HIPERTENSO')) return true;
-            if(prog.includes('DIABETICO')) return true;
-            if(classif.includes('GESTANTE')) return true;
-            if(prog.includes('CRIANCA')) {
-                const im = calcularIdadeAnosMesesDias(p.dtNascimento);
-                if(im.anos < 2) return true;
-            }
-            return false;
-        }
-
         function ehRuaValida(nomeRua) {
             if(!nomeRua) return false;
             const limpo = String(nomeRua).trim().toUpperCase();
@@ -637,6 +664,16 @@
             }
             if(aba === 'relatorios') construirTabelaRelatorioA4();
             if(aba === 'quantitativo') construirPainelQuantitativo();
+            if(aba === 'config') atualizarContadoresColados();
+        }
+
+        function atualizarContadoresColados() {
+            ['Gestantes', 'Hipertensos', 'Diabeticos', 'Criancas', 'Idosos'].forEach(ind => {
+                let progNome = ind === 'Gestantes' ? 'SAUDE INTEGRAL DA MULHER' : (ind === 'Hipertensos' ? 'HIPERTENSO' : (ind === 'Diabeticos' ? 'DIABETICO' : (ind === 'Criancas' ? 'CRIANCA' : 'SAUDE DO IDOSO')));
+                let qtd = pacientes.filter(p => (p.programa || "").toUpperCase().includes(progNome) || (ind === 'Gestantes' && (p.classificacao || "").toUpperCase().includes('GESTANTE'))).length;
+                const el = document.getElementById(`qtd-${ind.toLowerCase()}-coladas`);
+                if(el) el.innerText = `${qtd} cadastrados`;
+            });
         }
 
         function atualizarEstatisticas() {
@@ -1202,154 +1239,106 @@
             window.print();
         }
 
-        function importarPlanilha(event) {
-            const arquivo = event.target.files[0];
-            if(!arquivo) return;
-
-            const reader = new FileReader();
-            
-            if(arquivo.name.endsWith('.csv')) {
-                reader.onload = function(e) {
-                    processarDadosPlanilhaTexto(e.target.result);
-                };
-                reader.readAsText(arquivo, 'UTF-8');
-            } else {
-                reader.onload = function(e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-                    
-                    let headerIndex = 6;
-                    for(let i=0; i<Math.min(json.length, 12); i++) {
-                        let rowStr = JSON.stringify(json[i]).toUpperCase();
-                        if(rowStr.includes('USUÁRIO') || rowStr.includes('USUARIO')) {
-                            headerIndex = i;
-                            break;
-                        }
-                    }
-
-                    const headers = json[headerIndex];
-                    let rows = [];
-                    for(let i = headerIndex + 1; i < json.length; i++) {
-                        let r = json[i];
-                        if(!r || r.length === 0) continue;
-                        let obj = {};
-                        for(let j = 0; j < headers.length; j++) {
-                            if(headers[j]) {
-                                obj[headers[j].toString().trim()] = r[j] !== undefined ? r[j] : '';
-                            }
-                        }
-                        rows.push(obj);
-                    }
-
-                    processarListaPacientes(rows);
-                };
-                reader.readAsArrayBuffer(arquivo);
+        // FUNÇÃO INTELIGENTE DE PROCESSAR COPIAR E COLAR POR INDICADOR
+        function processarColagemIndicador(nomeIndicador, programaPadrao, classificacaoPadrao) {
+            const texto = document.getElementById(`texto-colar-${nomeIndicador}`).value.trim();
+            if(!texto) {
+                alert(`Por favor, cole os dados na caixa de ${nomeIndicador} antes de salvar.`);
+                return;
             }
-        }
 
-        function processarDadosPlanilhaTexto(textoCsv) {
-            Papa.parse(textoCsv, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    processarListaPacientes(results.data);
-                }
-            });
-        }
+            const linhas = texto.split('\n');
+            let novosAdicionados = 0;
 
-        function processarListaPacientes(dadosNovos) {
-            let mapaExistente = {};
-            pacientes.forEach(p => {
-                let nomeP = (p.nome || "").trim().toUpperCase();
-                let endP = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
-                let chaveUnica = `${nomeP}|${endP}`;
-                mapaExistente[chaveUnica] = p;
+            // Remove pacientes antigos deste indicador específico para atualizar com a nova colagem
+            pacientes = pacientes.filter(p => {
+                const prog = (p.programa || "").toUpperCase();
+                const classif = (p.classificacao || "").toUpperCase();
+                if (nomeIndicador === 'Gestantes') return !classif.includes('GESTANTE');
+                if (nomeIndicador === 'Hipertensos') return !prog.includes('HIPERTENSO');
+                if (nomeIndicador === 'Diabeticos') return !prog.includes('DIABETICO');
+                if (nomeIndicador === 'Criancas') return !prog.includes('CRIANCA');
+                if (nomeIndicador === 'Idosos') return !prog.includes('IDOSO');
+                return true;
             });
 
-            // FILTRA APENAS OS PACIENTES QUE ESTÃO NOS BLOCOS E ATENDEM AOS INDICADORES
-            let filtradosNovos = dadosNovos.filter(row => {
-                const rua = row['Endereço'] || row['ENDEREÇO'] || '';
-                if (!ehRuaValida(rua)) return false;
+            linhas.forEach(linha => {
+                const colunas = linha.split('\t');
+                if (colunas.length < 2) return; // ignora linhas vazias ou mal formatadas
 
-                const tempP = {
-                    programa: row['Programa'] || row['PROGRAMA'] || '',
-                    classificacao: row['Classificação'] || row['CLASSIFICAÇÃO'] || '',
-                    dtNascimento: row['Dt Nascimento'] || row['DT NASCIMENTO'] || ''
-                };
-                return atendeCriterioIndicador(tempP);
-            });
+                // Tenta achar colunas úteis colando do Excel/Tabela
+                // Geralmente: Programa, Classificação, Usuário, Dt Nasc, Idade, Sexo, Endereço, Nº, etc.
+                let nome = '';
+                let rua = '';
+                let num = 'S/N';
+                let dtNasc = '';
+                let idade = 0;
+                let sexo = 'F';
+                let dtCons = new Date().toISOString().split('T')[0];
+                let hba1c = '';
+                let coleta = '';
+                let bolsa = 'NÃO';
 
-            pacientes = filtradosNovos.map((row, idx) => {
-                const nomeNovo = (row['Usuário'] || row['USUÁRIO'] || row['usuario'] || row['Nome'] || row['nome'] || '').trim();
-                const ruaOriginal = (row['Endereço'] || row['ENDEREÇO'] || row['endereco'] || 'Rua Principal').trim();
-                const chaveUnica = `${nomeNovo.toUpperCase()}|${ruaOriginal.toUpperCase()}`;
+                // Varre as colunas buscando heurísticas
+                colunas.forEach((col, idx) => {
+                    let val = col.trim();
+                    if(!val) return;
+                    if(val.length > 6 && /^[A-Z\s\.]+$/.test(val) && !nome && !val.includes('RUA')) {
+                        nome = val;
+                    }
+                    if(val.toUpperCase().includes('RUA') || ehRuaValida(val)) {
+                        rua = val;
+                    }
+                    if(/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !dtNasc) {
+                        dtNasc = val;
+                    } else if(/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                        dtCons = val;
+                    }
+                    if(/^\d{1,3}$/.test(val) && parseInt(val) < 110 && !idade) {
+                        idade = parseInt(val);
+                    }
+                    if(val === 'M' || val === 'F') {
+                        sexo = val;
+                    }
+                    if(/^\d+$/.test(val) && parseInt(val) < 9999 && rua && num === 'S/N') {
+                        num = val;
+                    }
+                });
 
-                const progVal = row['Programa'] || row['PROGRAMA'] || '';
-                const classVal = row['Classificação'] || row['CLASSIFICAÇÃO'] || '';
-                const dtNascVal = row['Dt Nascimento'] || row['DT NASCIMENTO'] || '';
-                const idadeVal = row['Idade'] || row['IDADE'] || 0;
-                const sexoVal = row['Sexo'] || row['SEXO'] || 'F';
-                const numVal = row['Nº'] || row['N°'] || row['numero'] || 'S/N';
-                const bairroVal = row['Bairro'] || row['BAIRRO'] || '';
-                const dtConsVal = row['Dt Última Consulta'] || row['DT ÚLTIMA CONSULTA'] || new Date().toISOString().split('T')[0];
-                const situacaoVal = row['Situação'] || row['SITUAÇÃO'] || 'ATIVO';
-                const hba1cVal = row['Hemoglobina glicosilada'] || row['HEMOGLOBINA GLICOSILADA'] || '';
-                const coletaVal = row['Data de coleta'] || row['DATA DE COLETA'] || '';
-                const bolsaVal = row['Bolsa família'] || row['BOLSA FAMÍLIA'] || 'NÃO';
-
-                if (mapaExistente[chaveUnica]) {
-                    let pAntigo = mapaExistente[chaveUnica];
-                    return {
-                        ...pAntigo,
-                        id: idx + 1,
-                        programa: progVal || pAntigo.programa,
-                        classificacao: classVal || pAntigo.classificacao,
-                        dtNascimento: dtNascVal || pAntigo.dtNascimento,
-                        idade: idadeVal || pAntigo.idade,
-                        sexo: sexoVal || pAntigo.sexo,
-                        enderecoOriginal: ruaOriginal.toUpperCase(),
-                        endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                        numero: numVal || pAntigo.numero,
-                        bairro: bairroVal || pAntigo.bairro,
-                        ultimaConsulta: dtConsVal || pAntigo.ultimaConsulta,
-                        situacao: situacaoVal || pAntigo.situacao,
-                        hemoglobinaGlicosilada: hba1cVal || pAntigo.hemoglobinaGlicosilada,
-                        dataColeta: coletaVal || pAntigo.dataColeta,
-                        bolsaFamilia: bolsaVal || pAntigo.bolsaFamilia
-                    };
-                } else {
-                    return {
-                        id: idx + 1,
-                        programa: progVal,
-                        classificacao: classVal,
-                        nome: nomeNovo,
-                        dtNascimento: dtNascVal,
-                        idade: idadeVal,
-                        sexo: sexoVal,
-                        enderecoOriginal: ruaOriginal.toUpperCase(),
-                        endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                        numero: numVal,
-                        bairro: bairroVal,
-                        ultimaConsulta: dtConsVal,
-                        situacao: situacaoVal,
-                        hemoglobinaGlicosilada: hba1cVal,
-                        dataColeta: coletaVal,
-                        bolsaFamilia: bolsaVal,
+                // Se encontrou pelo menos um nome e a rua pertence à microárea
+                if (nome && ehRuaValida(rua)) {
+                    pacientes.push({
+                        id: Date.now() + Math.random(),
+                        programa: programaPadrao,
+                        classificacao: classificacaoPadrao,
+                        nome: nome.toUpperCase(),
+                        dtNascimento: dtNasc || '01/01/1970',
+                        idade: idade || 30,
+                        sexo: sexo,
+                        enderecoOriginal: rua.toUpperCase(),
+                        endereco: formatarEnderecoParaIniciais(rua),
+                        numero: num,
+                        bairro: 'Centro',
+                        ultimaConsulta: dtCons,
+                        situacao: 'ATIVO',
+                        hemoglobinaGlicosilada: hba1c,
+                        dataColeta: coleta,
+                        bolsaFamilia: bolsa,
                         periodo: 'Manhã',
                         registrado: false,
                         complemento: '',
                         complexo: false, complexoTipos: '', complexoObs: '',
                         tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
                         historico: []
-                    };
+                    });
+                    novosAdicionados++;
                 }
             });
 
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
-            alert(`Sucesso! Carregados ${pacientes.length} pacientes válidos dos blocos (mantendo anotações anteriores).`);
+            document.getElementById(`texto-colar-${nomeIndicador}`).value = '';
+            atualizarContadoresColados();
+            alert(`Sucesso! Foram importados ${novosAdicionados} pacientes válidos para ${nomeIndicador} (filtrados para os blocos da sua microárea).`);
             mudarAba('pacientes');
             renderizarPacientes();
         }
@@ -1364,6 +1353,7 @@
                 pacientes = [];
                 localStorage.removeItem('acs_pacientes_cristiane');
                 renderizarPacientes();
+                atualizarContadoresColados();
             }
         }
 
