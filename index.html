@@ -336,6 +336,35 @@
                         <input type="text" id="edit-semanas" oninput="checarAvisoVacinaModal()" placeholder="Ex: 20 semanas" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-bold text-emerald-400">
                     </div>
                 </div>
+
+                <!-- BLOCO HIPERTENSÃO (HAS) -->
+                <div id="bloco-has" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Hipertensão (HAS)</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400">ECG</label>
+                            <input type="text" id="edit-ecg" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400">MAPA</label>
+                            <input type="text" id="edit-mapa" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCO CRIANÇA (CR) -->
+                <div id="bloco-cr" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Criança (CR)</span>
+                    <label class="block text-slate-400">Vacinas Faltantes / Acompanhamento</label>
+                    <input type="text" id="edit-vacinas-cr" placeholder="Ex: Pentavalente pendente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                </div>
+
+                <!-- BLOCO IDOSO (ID) -->
+                <div id="bloco-id" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
+                    <span class="font-bold text-emerald-400 block">🔹 Idoso (ID)</span>
+                    <label class="block text-slate-400">Vacinas (Idoso)</label>
+                    <input type="text" id="edit-vacinas-id" placeholder="Ex: Influenza em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                </div>
             </div>
 
             <div class="flex justify-end space-x-2 pt-2 border-t border-slate-700">
@@ -462,7 +491,7 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Gestantes", classificacao: "Gestante", nome: "Ana C. O.", dtNascimento: "1995-05-10", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", bairro: "Centro", ultimaConsulta: "2026-01-15", situacao: "Ativo", glicada: "", coletaColeta: "", bolsaFamilia: "Sim", registrado: false, complexo: false, tabagismo: false, semanas: "20 semanas", historico: [] }
+                { id: 1, programa: "Gestantes", classificacao: "Gestante", nome: "Ana C. O.", dtNascimento: "1995-05-10", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", bairro: "Centro", ultimaConsulta: "2026-01-15", situacao: "Ativo", glicada: "", coletaColeta: "", bolsaFamilia: "Sim", registrado: false, complexo: false, tabagismo: false, semanas: "20 semanas", ecg: "", mapa: "", vacinas: "", historico: [] }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -634,13 +663,20 @@
             document.getElementById('edit-glicada').value = p.glicada || '';
             document.getElementById('edit-coleta').value = p.coletaColeta || '';
             document.getElementById('edit-semanas').value = p.semanas || '';
+            document.getElementById('edit-ecg').value = p.ecg || '';
+            document.getElementById('edit-mapa').value = p.mapa || '';
+            document.getElementById('edit-vacinas-cr').value = p.vacinas || '';
+            document.getElementById('edit-vacinas-id').value = p.vacinas || '';
 
             const histDiv = document.getElementById('historico-prontuario');
             histDiv.innerHTML = (!p.historico || p.historico.length === 0) ? `<span class="text-slate-500">Nenhum registro.</span>` : p.historico.map(h => `<div class="bg-slate-800 p-1.5 rounded"><b>${h.data}</b>: ${h.motivo} - ${h.contato}</div>`).join('');
 
-            const progU = (p.programa || "").toUpperCase();
+            const progU = ((p.programa || "") + " " + (p.classificacao || "")).toUpperCase();
             document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET') && !progU.includes('DM'));
             document.getElementById('bloco-ges').classList.toggle('hidden', !progU.includes('GESTA') && !progU.includes('GES'));
+            document.getElementById('bloco-has').classList.toggle('hidden', !progU.includes('HIPERTENS') && !progU.includes('HAS'));
+            document.getElementById('bloco-cr').classList.toggle('hidden', !progU.includes('CRIANÇA') && !progU.includes('CR'));
+            document.getElementById('bloco-id').classList.toggle('hidden', !progU.includes('IDOSO') && !progU.includes('ID'));
 
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
@@ -667,6 +703,12 @@
             p.glicada = document.getElementById('edit-glicada').value;
             p.coletaColeta = document.getElementById('edit-coleta').value;
             p.semanas = document.getElementById('edit-semanas').value;
+            p.ecg = document.getElementById('edit-ecg').value;
+            p.mapa = document.getElementById('edit-mapa').value;
+
+            const progU = ((p.programa || "") + " " + (p.classificacao || "")).toUpperCase();
+            if(progU.includes('CRIANÇA') || progU.includes('CR')) p.vacinas = document.getElementById('edit-vacinas-cr').value;
+            if(progU.includes('IDOSO') || progU.includes('ID')) p.vacinas = document.getElementById('edit-vacinas-id').value;
 
             const motivo = document.getElementById('edit-motivo-busca').value.trim();
             const contato = document.getElementById('edit-visita-contato').value.trim();
@@ -721,14 +763,17 @@
                 const st = avaliarStatusVisita(p);
                 let badgeClass = (st === 'Urgente') ? 'bg-red-500/20 text-red-300' : (st === 'Inativo' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300');
                 const progAbrev = formatarProgramaAbreviado(p.programa + " " + p.classificacao);
-                const progU = (p.programa + " " + p.classificacao).toUpperCase();
+                const progU = ((p.programa || "") + " " + (p.classificacao || "")).toUpperCase();
                 
-                let infoGestanteHtml = '';
+                let detalhesEspecificosHtml = '';
                 if(progU.includes('GESTA') || progU.includes('GES')) {
                     let semVal = p.semanas || 'A informar';
                     let numS = extrairNumeroSemanas(semVal);
                     let alertaVacina = (numS >= 14 && numS <= 27) ? `<span class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">⚠️ Vacina 14-27s</span>` : '';
-                    infoGestanteHtml = `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">Semanas: <strong>${semVal}</strong></span> ${alertaVacina}`;
+                    detalhesEspecificosHtml += `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">Semanas: <strong>${semVal}</strong></span> ${alertaVacina}`;
+                }
+                if(progU.includes('DIABET') || progU.includes('DM')) {
+                    if(p.glicada) detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Glicada: <strong>${p.glicada}</strong></span>`;
                 }
 
                 return `
@@ -753,8 +798,7 @@
                         </div>
                         <div class="flex flex-wrap gap-2 text-[11px]">
                             <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Última Consulta: <strong>${p.ultimaConsulta}</strong></span>
-                            ${p.glicada ? `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Glicada: <strong>${p.glicada}</strong></span>` : ''}
-                            ${infoGestanteHtml}
+                            ${detalhesEspecificosHtml}
                             ${p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo</span>` : ''}
                             ${p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc</span>` : ''}
                         </div>
@@ -850,6 +894,9 @@
                             tabagismo: existente ? existente.tabagismo : false,
                             tabagismoTipos: existente ? existente.tabagismoTipos : '',
                             tabagismoObs: existente ? existente.tabagismoObs : '',
+                            ecg: existente ? existente.ecg : '',
+                            mapa: existente ? existente.mapa : '',
+                            vacinas: existente ? existente.vacinas : '',
                             historico: existente ? existente.historico : []
                         };
                     });
