@@ -20,14 +20,65 @@
             border-color: #cbd5e1 !important;
             color: #0f172a !important;
         }
+        body.light-theme header h1 { color: #0f172a !important; }
+        body.light-theme header p { color: #475569 !important; }
+        
         body.light-theme .bg-slate-900 { background-color: #ffffff !important; color: #0f172a !important; }
-        body.light-theme .bg-slate-800 { background-color: #ffffff !important; color: #0f172a !important; border-color: #cbd5e1 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        body.light-theme .text-slate-100, body.light-theme .text-slate-200 { color: #0f172a !important; }
-        body.light-theme .text-slate-300, body.light-theme .text-slate-400, body.light-theme .text-slate-500 { color: #1e293b !important; font-weight: 500; }
+        body.light-theme .bg-slate-800 { background-color: #ffffff !important; color: #0f172a !important; border-color: #cbd5e1 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        
+        /* Barra de filtros de programas no modo claro */
+        body.light-theme .barra-programas {
+            background-color: #ffffff !important;
+            border-color: #cbd5e1 !important;
+        }
+        body.light-theme .btn-prog-inativo {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        /* Caixa interna de dados do paciente bem clarinha */
+        body.light-theme .caixa-info-paciente {
+            background-color: #f8fafc !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        body.light-theme .caixa-info-paciente .label-info {
+            color: #475569 !important;
+        }
+        body.light-theme .caixa-info-paciente .valor-info {
+            color: #0f172a !important;
+        }
+
+        /* Badges inferiores do card no modo claro */
+        body.light-theme .badge-visita {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        body.light-theme .badge-ba {
+            background-color: #dcfce7 !important;
+            color: #14532d !important;
+            border: 1px solid #86efac !important;
+        }
+        body.light-theme .badge-contato {
+            background-color: #dbeafe !important;
+            color: #1e3a8a !important;
+            border: 1px solid #93c5fd !important;
+        }
+
+        body.light-theme .text-white, body.light-theme .text-slate-100, body.light-theme .text-slate-200 { color: #0f172a !important; }
+        body.light-theme .text-slate-300, body.light-theme .text-slate-400, body.light-theme .text-slate-500 { color: #334155 !important; }
+        
+        /* Mantém texto branco em botões sólidos escuros/coloridos */
+        body.light-theme .bg-emerald-600, 
+        body.light-theme .bg-slate-700.btn-prontuario { color: #ffffff !important; }
+        body.light-theme .bg-slate-700.btn-prontuario { background-color: #1e293b !important; }
+
         body.light-theme input, body.light-theme select, body.light-theme textarea {
             background-color: #f8fafc !important;
             color: #0f172a !important;
-            border-color: #64748b !important;
+            border-color: #94a3b8 !important;
         }
         body.light-theme nav {
             background-color: #ffffff !important;
@@ -54,20 +105,17 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- CABEÇALHO -->
+    <!-- CABEÇALHO SEM O ÍCONE LATERAL -->
     <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-30 flex justify-between items-center shadow-md no-print">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-xl text-white shadow-lg">🩺</div>
-            <div>
-                <h1 class="font-bold text-lg leading-tight text-white">Gestão ACS</h1>
-                <p class="text-xs text-slate-300">Sua microárea na palma da mão</p>
-            </div>
+        <div>
+            <h1 class="font-bold text-lg leading-tight text-white">Gestão ACS</h1>
+            <p class="text-xs text-slate-300">Sua microárea na palma da mão</p>
         </div>
         <div class="flex items-center space-x-2">
-            <button onclick="alternarTemaSol()" id="btn-tema" class="bg-slate-700 hover:bg-slate-600 text-base px-3 py-1.5 rounded-full font-medium border border-slate-600 transition flex items-center justify-center" title="Alternar Modo Sol / Noite">
+            <button onclick="alternarTemaSol()" id="btn-tema" class="bg-slate-700 hover:bg-slate-600 text-base w-9 h-9 rounded-full font-medium border border-slate-600 transition flex items-center justify-center" title="Alternar Modo Sol / Noite">
                 ☀️
             </button>
-            <span class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/30">100% Offline</span>
+            <span class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-semibold border border-emerald-500/30">100% Offline</span>
         </div>
     </header>
 
@@ -79,34 +127,34 @@
             <!-- CARDS DE RESUMO -->
             <div class="grid grid-cols-4 gap-2 no-print">
                 <div onclick="filtrarStatus('TODOS')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
-                    <span id="stat-total" class="block text-xl font-bold text-emerald-400">0</span>
+                    <span id="stat-total" class="block text-xl font-bold text-emerald-500">0</span>
                     <span class="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">Total</span>
                 </div>
                 <div onclick="filtrarStatus('URGENTE')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-red-500 transition">
-                    <span id="stat-urgente" class="block text-xl font-bold text-red-400">0</span>
+                    <span id="stat-urgente" class="block text-xl font-bold text-red-500">0</span>
                     <span class="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">Urgente</span>
                 </div>
                 <div onclick="filtrarStatus('ATIVOS')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-blue-500 transition">
-                    <span id="stat-ativos" class="block text-xl font-bold text-blue-400">0</span>
+                    <span id="stat-ativos" class="block text-xl font-bold text-blue-500">0</span>
                     <span class="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">Ativos</span>
                 </div>
                 <div onclick="filtrarStatus('INATIVOS')" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-amber-500 transition">
-                    <span id="stat-inativos" class="block text-xl font-bold text-amber-400">0</span>
+                    <span id="stat-inativos" class="block text-xl font-bold text-amber-500">0</span>
                     <span class="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">Inativos</span>
                 </div>
             </div>
 
-            <!-- BOTÕES DELICADOS DE FILTRO POR PROGRAMAS + TABAGISMO/ÁLCOOL + COMPLEXOS -->
-            <div class="flex flex-wrap gap-1.5 no-print items-center bg-slate-800/60 p-2 rounded-xl border border-slate-700/80">
+            <!-- BOTÕES DE FILTRO POR PROGRAMAS + TABAGISMO/ÁLCOOL + COMPLEXOS -->
+            <div class="barra-programas flex flex-wrap gap-1.5 no-print items-center bg-slate-800/80 p-2 rounded-xl border border-slate-700">
                 <button onclick="filtrarPrograma('TODOS')" id="btn-prog-TODOS" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">Todos</button>
-                <button onclick="filtrarPrograma('DM')" id="btn-prog-DM" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">DM</button>
-                <button onclick="filtrarPrograma('HAS')" id="btn-prog-HAS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">HAS</button>
-                <button onclick="filtrarPrograma('GES')" id="btn-prog-GES" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">GES</button>
-                <button onclick="filtrarPrograma('CR')" id="btn-prog-CR" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">CR</button>
-                <button onclick="filtrarPrograma('ID')" id="btn-prog-ID" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">ID</button>
-                <button onclick="filtrarPrograma('BLSA')" id="btn-prog-BLSA" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">BLSA</button>
-                <button onclick="filtrarPrograma('TAB')" id="btn-prog-TAB" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600/70 text-amber-100 hover:bg-amber-600 transition">🚬 TAB/ÁLC</button>
-                <button onclick="filtrarPrograma('COMPLEXOS')" id="btn-prog-COMPLEXOS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-600/70 text-purple-100 hover:bg-purple-600 transition">🧠 Complexos</button>
+                <button onclick="filtrarPrograma('DM')" id="btn-prog-DM" class="btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">DM</button>
+                <button onclick="filtrarPrograma('HAS')" id="btn-prog-HAS" class="btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">HAS</button>
+                <button onclick="filtrarPrograma('GES')" id="btn-prog-GES" class="btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">GES</button>
+                <button onclick="filtrarPrograma('CR')" id="btn-prog-CR" class="btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">CR</button>
+                <button onclick="filtrarPrograma('ID')" id="btn-prog-ID" class="btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">ID</button>
+                <button onclick="filtrarPrograma('BLSA')" id="btn-prog-BLSA" class="btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition">BLSA</button>
+                <button onclick="filtrarPrograma('TAB')" id="btn-prog-TAB" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-500 transition">🚬 TAB/ÁLC</button>
+                <button onclick="filtrarPrograma('COMPLEXOS')" id="btn-prog-COMPLEXOS" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-500 transition">🧠 Complexos</button>
             </div>
 
             <!-- BUSCA E OS 3 SUBMENUS DE BLOCOS COM MÚLTIPLA ESCOLHA -->
@@ -115,7 +163,7 @@
                 
                 <div class="grid grid-cols-3 gap-2">
                     <div class="relative">
-                        <button type="button" onclick="toggleMenuBloco('pac', 1)" class="w-full bg-slate-900 border border-slate-700 hover:border-emerald-500 rounded-lg px-2.5 py-2 text-xs text-emerald-400 font-semibold flex justify-between items-center">
+                        <button type="button" onclick="toggleMenuBloco('pac', 1)" class="w-full bg-slate-900 border border-slate-700 hover:border-emerald-500 rounded-lg px-2.5 py-2 text-xs text-emerald-500 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 01 <span id="badge-pac-1" class="hidden ml-1 bg-emerald-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
                             <span>▾</span>
                         </button>
@@ -123,7 +171,7 @@
                     </div>
 
                     <div class="relative">
-                        <button type="button" onclick="toggleMenuBloco('pac', 2)" class="w-full bg-slate-900 border border-slate-700 hover:border-blue-500 rounded-lg px-2.5 py-2 text-xs text-blue-400 font-semibold flex justify-between items-center">
+                        <button type="button" onclick="toggleMenuBloco('pac', 2)" class="w-full bg-slate-900 border border-slate-700 hover:border-blue-500 rounded-lg px-2.5 py-2 text-xs text-blue-500 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 02 <span id="badge-pac-2" class="hidden ml-1 bg-blue-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
                             <span>▾</span>
                         </button>
@@ -131,7 +179,7 @@
                     </div>
 
                     <div class="relative">
-                        <button type="button" onclick="toggleMenuBloco('pac', 3)" class="w-full bg-slate-900 border border-slate-700 hover:border-purple-500 rounded-lg px-2.5 py-2 text-xs text-purple-400 font-semibold flex justify-between items-center">
+                        <button type="button" onclick="toggleMenuBloco('pac', 3)" class="w-full bg-slate-900 border border-slate-700 hover:border-purple-500 rounded-lg px-2.5 py-2 text-xs text-purple-500 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 03 <span id="badge-pac-3" class="hidden ml-1 bg-purple-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
                             <span>▾</span>
                         </button>
@@ -156,7 +204,7 @@
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="font-bold text-base text-emerald-400">📊 Painel Quantitativo da Microárea</h2>
+                        <h2 class="font-bold text-base text-emerald-500">📊 Painel Quantitativo da Microárea</h2>
                         <p class="text-xs text-slate-300">Toque em qualquer programa ou rua para ver os pacientes correspondentes.</p>
                     </div>
                     <button onclick="gerarRelatorioA4()" class="bg-slate-700 hover:bg-slate-600 text-xs font-semibold px-3 py-2 rounded-lg transition no-print text-white">🖨️ Imprimir Resumo</button>
@@ -176,9 +224,7 @@
                                     <th class="p-2.5 text-center">Inativos</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-quant-programas" class="divide-y divide-slate-700">
-                                <!-- Preenchido via script -->
-                            </tbody>
+                            <tbody id="tabela-quant-programas" class="divide-y divide-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -195,9 +241,7 @@
                                     <th class="p-2.5 text-center">Qtd. Pacientes</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-quant-ruas" class="divide-y divide-slate-700">
-                                <!-- Preenchido via script -->
-                            </tbody>
+                            <tbody id="tabela-quant-ruas" class="divide-y divide-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -212,7 +256,7 @@
                 
                 <div class="grid grid-cols-3 gap-2">
                     <div class="relative">
-                        <button type="button" onclick="toggleMenuBloco('rel', 1)" class="w-full bg-slate-900 border border-slate-700 hover:border-emerald-500 rounded-lg px-2.5 py-2 text-xs text-emerald-400 font-semibold flex justify-between items-center">
+                        <button type="button" onclick="toggleMenuBloco('rel', 1)" class="w-full bg-slate-900 border border-slate-700 hover:border-emerald-500 rounded-lg px-2.5 py-2 text-xs text-emerald-500 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 01 <span id="badge-rel-1" class="hidden ml-1 bg-emerald-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
                             <span>▾</span>
                         </button>
@@ -220,7 +264,7 @@
                     </div>
 
                     <div class="relative">
-                        <button type="button" onclick="toggleMenuBloco('rel', 2)" class="w-full bg-slate-900 border border-slate-700 hover:border-blue-500 rounded-lg px-2.5 py-2 text-xs text-blue-400 font-semibold flex justify-between items-center">
+                        <button type="button" onclick="toggleMenuBloco('rel', 2)" class="w-full bg-slate-900 border border-slate-700 hover:border-blue-500 rounded-lg px-2.5 py-2 text-xs text-blue-500 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 02 <span id="badge-rel-2" class="hidden ml-1 bg-blue-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
                             <span>▾</span>
                         </button>
@@ -228,7 +272,7 @@
                     </div>
 
                     <div class="relative">
-                        <button type="button" onclick="toggleMenuBloco('rel', 3)" class="w-full bg-slate-900 border border-slate-700 hover:border-purple-500 rounded-lg px-2.5 py-2 text-xs text-purple-400 font-semibold flex justify-between items-center">
+                        <button type="button" onclick="toggleMenuBloco('rel', 3)" class="w-full bg-slate-900 border border-slate-700 hover:border-purple-500 rounded-lg px-2.5 py-2 text-xs text-purple-500 font-semibold flex justify-between items-center">
                             <span>📁 Bloco 03 <span id="badge-rel-3" class="hidden ml-1 bg-purple-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px]">0</span></span>
                             <span>▾</span>
                         </button>
@@ -279,7 +323,7 @@
 
                 <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
                     <button onclick="carregarDadosExemplo()" class="bg-slate-700 hover:bg-slate-600 text-xs font-semibold px-3 py-2 rounded-lg transition text-white">Carregar Exemplo Prático</button>
-                    <button onclick="limparDados()" class="bg-red-500/20 text-red-300 hover:bg-red-500/30 text-xs font-semibold px-3 py-2 rounded-lg transition">Apagar Todos os Dados</button>
+                    <button onclick="limparDados()" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-semibold px-3 py-2 rounded-lg transition">Apagar Todos os Dados</button>
                 </div>
             </div>
         </section>
@@ -290,14 +334,13 @@
     <div id="modal-edicao" class="hidden fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-base text-emerald-400" id="modal-titulo">Prontuário e Evolução</h3>
+                <h3 class="font-bold text-base text-emerald-500" id="modal-titulo">Prontuário e Evolução</h3>
                 <button onclick="fecharModal()" class="text-slate-300 hover:text-white text-lg font-bold">✕</button>
             </div>
             
             <input type="hidden" id="edit-id">
 
             <div class="space-y-3 text-xs">
-                <!-- SELETOR DE DATA OFICIAL E PERÍODO -->
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-slate-200 mb-1 font-semibold">Data da Visita / Atendimento</label>
@@ -317,11 +360,10 @@
                     <input type="text" id="edit-complemento" placeholder="Ex: Deficiente visual, vulnerável, LGBTQIA+, acamado..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-medium">
                 </div>
 
-                <!-- BLOCO DE PACIENTE COMPLEXO -->
                 <div class="bg-purple-950/40 border border-purple-500/40 p-3 rounded-xl space-y-2">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="checkbox" id="edit-complexo" onchange="toggleBlocoComplexo()" class="w-4 h-4 rounded accent-purple-500 bg-slate-900 border-slate-600">
-                        <span class="font-bold text-purple-300">🧠 Classificar como Paciente Complexo</span>
+                        <span class="font-bold text-purple-400">🧠 Classificar como Paciente Complexo</span>
                     </label>
                     <div id="detalhes-complexo-div" class="hidden space-y-2 pt-1">
                         <label class="block text-slate-200 font-semibold">Especifique a Condição Complexa:</label>
@@ -337,11 +379,10 @@
                     </div>
                 </div>
 
-                <!-- BLOCO TABAGISMO, ÁLCOOL E OUTRAS DEPENDÊNCIAS -->
                 <div class="bg-amber-950/30 border border-amber-500/40 p-3 rounded-xl space-y-2">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="checkbox" id="edit-tabagismo" onchange="toggleBlocoTabagismo()" class="w-4 h-4 rounded accent-amber-500 bg-slate-900 border-slate-600">
-                        <span class="font-bold text-amber-300">🚬 Tabagismo, Álcool ou Dependências Químicas</span>
+                        <span class="font-bold text-amber-400">🚬 Tabagismo, Álcool ou Dependências Químicas</span>
                     </label>
                     <div id="detalhes-tabagismo-div" class="hidden space-y-2 pt-1">
                         <div class="grid grid-cols-2 gap-2 text-slate-100">
@@ -354,9 +395,8 @@
                     </div>
                 </div>
 
-                <!-- REGISTRO DE NOVA ANOTAÇÃO PARA O PRONTUÁRIO -->
                 <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-emerald-500/40">
-                    <span class="font-bold text-emerald-400 block">➕ Novo Registro no Prontuário</span>
+                    <span class="font-bold text-emerald-500 block">➕ Novo Registro no Prontuário</span>
                     <div>
                         <label class="block text-slate-200 mb-1">Motivo da Busca Ativa (Novo)</label>
                         <input type="text" id="edit-motivo-busca" placeholder="Ex: Falta à consulta..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-medium">
@@ -367,17 +407,13 @@
                     </div>
                 </div>
 
-                <!-- HISTÓRICO ANTERIOR EM FORMATO DE SUBMENU (ACORDEÃO) -->
                 <div class="space-y-1">
                     <label class="block text-slate-200 font-semibold">📜 Histórico de Prontuário (Clique na data para ver)</label>
-                    <div id="historico-prontuario" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1.5 text-[11px] text-slate-100 font-medium">
-                        <!-- Preenchido via script -->
-                    </div>
+                    <div id="historico-prontuario" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1.5 text-[11px] text-slate-100 font-medium"></div>
                 </div>
 
-                <!-- BLOCO DIABETES (DM) -->
                 <div id="bloco-dm" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <span class="font-bold text-emerald-400 block">🔹 Diabetes (DM)</span>
+                    <span class="font-bold text-emerald-500 block">🔹 Diabetes (DM)</span>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-slate-200 mb-1">Glicada (HbA1c)</label>
@@ -401,7 +437,7 @@
     <!-- NAVEGAÇÃO INFERIOR -->
     <nav class="bg-slate-800 border-t border-slate-700 fixed bottom-0 left-0 right-0 z-30 no-print">
         <div class="max-w-4xl mx-auto flex justify-around py-2">
-            <button onclick="mudarAba('pacientes')" id="btn-aba-pacientes" class="flex flex-col items-center text-emerald-400 space-y-1">
+            <button onclick="mudarAba('pacientes')" id="btn-aba-pacientes" class="flex flex-col items-center text-emerald-500 space-y-1">
                 <span class="text-xl">📋</span>
                 <span class="text-[11px] font-medium">Pacientes</span>
             </button>
@@ -538,7 +574,7 @@
                 document.getElementById(`tab-${a}`).classList.add('hidden');
                 const btn = document.getElementById(`btn-aba-${a}`);
                 if(btn) {
-                    btn.classList.remove('text-emerald-400');
+                    btn.classList.remove('text-emerald-500');
                     btn.classList.add('text-slate-300');
                 }
             });
@@ -546,7 +582,7 @@
             const btnAtivo = document.getElementById(`btn-aba-${aba}`);
             if(btnAtivo) {
                 btnAtivo.classList.remove('text-slate-300');
-                btnAtivo.classList.add('text-emerald-400');
+                btnAtivo.classList.add('text-emerald-500');
             }
             if(aba === 'relatorios') construirTabelaRelatorioA4();
             if(aba === 'quantitativo') construirPainelQuantitativo();
@@ -566,8 +602,12 @@
                 if(btn) {
                     if(p === prog) {
                         btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition";
+                    } else if(p === 'TAB') {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-500 transition";
+                    } else if(p === 'COMPLEXOS') {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-500 transition";
                     } else {
-                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition";
+                        btn.className = "btn-prog-inativo px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-600 transition";
                     }
                 }
             });
@@ -596,14 +636,14 @@
                     let html = `
                         <div class="flex justify-between items-center px-2 py-1 border-b border-slate-700 mb-1">
                             <span class="text-[11px] font-bold text-slate-300 uppercase">Bloco 0${b}</span>
-                            <button type="button" onclick="selecionarTodoBloco('${prefixo}', ${b})" class="text-[11px] text-emerald-400 hover:underline">Marcar/Desmarcar</button>
+                            <button type="button" onclick="selecionarTodoBloco('${prefixo}', ${b})" class="text-[11px] text-emerald-500 hover:underline">Marcar/Desmarcar</button>
                         </div>
                     `;
                     
                     BLOCOS_RUAS[b].forEach(r => {
                         const checked = setAtivo.has(r.nome) ? 'checked' : '';
                         html += `
-                            <label class="flex items-center space-x-2.5 p-2 rounded-lg hover:bg-slate-700/70 cursor-pointer transition">
+                            <label class="flex items-center space-x-2.5 p-2 rounded-lg hover:bg-slate-700/20 cursor-pointer transition">
                                 <input type="checkbox" ${checked} onchange="alternarRua('${prefixo}', '${r.nome}')" class="w-4 h-4 rounded accent-emerald-500 bg-slate-900 border-slate-600">
                                 <div class="leading-tight">
                                     <span class="font-bold text-xs text-white">${r.iniciais}</span>
@@ -694,7 +734,7 @@
                 } else {
                     tagsContainer.innerHTML = Array.from(setAtivo).map(nome => {
                         const sig = obterIniciaisPorNome(nome);
-                        return `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-md font-bold text-[11px] flex items-center gap-1">${sig} <button type="button" onclick="alternarRua('${prefixo}', '${nome}'); construirMenusCheckbox();" class="hover:text-white ml-0.5">×</button></span>`;
+                        return `<span class="bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 px-2 py-0.5 rounded-md font-bold text-[11px] flex items-center gap-1">${sig} <button type="button" onclick="alternarRua('${prefixo}', '${nome}'); construirMenusCheckbox();" class="hover:text-white ml-0.5">×</button></span>`;
                     }).join('');
                 }
             });
@@ -760,7 +800,7 @@
             } else {
                 histDiv.innerHTML = p.historico.map((h, index) => `
                     <div class="bg-slate-800 rounded border border-slate-700 overflow-hidden">
-                        <button type="button" onclick="toggleSubmenuHistorico(${index})" class="w-full text-left px-3 py-1.5 bg-slate-800 hover:bg-slate-700 flex justify-between items-center text-emerald-400 font-bold transition">
+                        <button type="button" onclick="toggleSubmenuHistorico(${index})" class="w-full text-left px-3 py-1.5 bg-slate-800 hover:bg-slate-700 flex justify-between items-center text-emerald-500 font-bold transition">
                             <span>📅 ${h.data} (${h.periodo || 'Manhã'})</span>
                             <span id="seta-hist-${index}" class="text-xs text-slate-200">▼</span>
                         </button>
@@ -913,9 +953,9 @@
 
             listaDiv.innerHTML = filtrados.map(p => {
                 const statusVisita = avaliarStatusVisita(p);
-                let badgeClass = 'bg-emerald-500/20 text-emerald-300 font-bold';
-                if(statusVisita === 'Urgente') badgeClass = 'bg-red-500/20 text-red-300 border border-red-500/30 font-bold';
-                if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold';
+                let badgeClass = 'bg-emerald-500/20 text-emerald-500 font-bold border border-emerald-500/30';
+                if(statusVisita === 'Urgente') badgeClass = 'bg-red-500/20 text-red-500 border border-red-500/30 font-bold';
+                if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-500 border border-amber-500/30 font-bold';
 
                 let ultimoHistorico = (p.historico && p.historico.length > 0) ? p.historico[0] : {motivo: '-', contato: '-'};
                 const programaAbreviado = formatarProgramaAbreviado(p.programa);
@@ -925,13 +965,13 @@
                 let detalhesEspecificosHtml = '';
                 
                 if (progU.includes('DIABET') || progU.includes('DM')) {
-                    if(p.hemoglobinaGlicosilada) detalhesEspecificosHtml += `<span class="bg-slate-700/80 px-2 py-1 rounded text-slate-100 font-medium">HbA1c: <strong>${p.hemoglobinaGlicosilada}</strong></span>`;
-                    if(p.dataColeta) detalhesEspecificosHtml += `<span class="bg-slate-700/80 px-2 py-1 rounded text-slate-100 font-medium">Coleta: <strong>${p.dataColeta}</strong></span>`;
+                    if(p.hemoglobinaGlicosilada) detalhesEspecificosHtml += `<span class="badge-visita bg-slate-700/80 px-2 py-1 rounded text-white font-medium">HbA1c: <strong>${p.hemoglobinaGlicosilada}</strong></span>`;
+                    if(p.dataColeta) detalhesEspecificosHtml += `<span class="badge-visita bg-slate-700/80 px-2 py-1 rounded text-white font-medium">Coleta: <strong>${p.dataColeta}</strong></span>`;
                 }
 
-                let complementoHtml = p.complemento ? `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded font-medium">Obs/Compl: <strong>${p.complemento}</strong></span>` : '';
-                let complexoBadge = p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo: ${p.complexoTipos || 'Sim'}</span>` : '';
-                let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'}</span>` : '';
+                let complementoHtml = p.complemento ? `<span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-1 rounded font-medium">Obs/Compl: <strong>${p.complemento}</strong></span>` : '';
+                let complexoBadge = p.complexo ? `<span class="bg-purple-600/30 text-purple-400 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo: ${p.complexoTipos || 'Sim'}</span>` : '';
+                let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-400 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'}</span>` : '';
 
                 let nomeExibicao = p.nome || 'Usuário Sem Nome';
                 let idadeExibicao = p.idade !== undefined && p.idade !== "" ? p.idade : '0';
@@ -942,29 +982,29 @@
                 let bolsaExibicao = p.bolsaFamilia || 'Não';
 
                 return `
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative shadow-md">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative shadow-sm">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center space-x-2.5">
                                 <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer" title="Marcar como registrado no sistema">
                                 <div>
-                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${programaAbreviado} ${p.classificacao ? '· ' + p.classificacao : ''}</span>
+                                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">${programaAbreviado} ${p.classificacao ? '· ' + p.classificacao : ''}</span>
                                     <h3 class="font-bold text-base text-white">${nomeExibicao}</h3>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <span class="text-xs px-2.5 py-0.5 rounded-full ${badgeClass}">Visita: ${statusVisita}</span>
-                                <button onclick="abrirModalEdicao(${p.id})" class="bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition" title="Abrir Prontuário">📖 Prontuário</button>
+                                <button onclick="abrirModalEdicao(${p.id})" class="btn-prontuario bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition" title="Abrir Prontuário">📖 Prontuário</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-white bg-slate-900/30 p-2.5 rounded-lg border border-slate-700/50">
-                            <div><span class="text-slate-300 block font-medium">Idade / Sexo:</span> <span class="font-bold">${idadeExibicao} anos · ${sexoExibicao}</span></div>
-                            <div><span class="text-slate-300 block font-medium">Endereço:</span> <span class="font-bold">${endExibicao}, ${numExibicao}${bairroExibicao}</span></div>
-                            <div><span class="text-slate-300 block font-medium">Bolsa Família:</span> <span class="font-bold">${bolsaExibicao}</span></div>
+                        <div class="caixa-info-paciente grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-white bg-slate-700/30 p-2.5 rounded-lg border border-slate-600/40">
+                            <div><span class="label-info text-slate-300 block font-medium">Idade / Sexo:</span> <span class="valor-info font-bold">${idadeExibicao} anos · ${sexoExibicao}</span></div>
+                            <div><span class="label-info text-slate-300 block font-medium">Endereço:</span> <span class="valor-info font-bold">${endExibicao}, ${numExibicao}${bairroExibicao}</span></div>
+                            <div><span class="label-info text-slate-300 block font-medium">Bolsa Família:</span> <span class="valor-info font-bold">${bolsaExibicao}</span></div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
-                            <span class="bg-slate-700/80 px-2 py-1 rounded text-white font-medium">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
-                            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded font-medium">Últ. BA: <strong>${ultimoHistorico.motivo}</strong></span>
-                            <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded font-medium">Últ. Contato: <strong>${ultimoHistorico.contato}</strong></span>
+                            <span class="badge-visita bg-slate-700/80 px-2 py-1 rounded text-white font-medium">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
+                            <span class="badge-ba bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded font-medium">Últ. BA: <strong>${ultimoHistorico.motivo}</strong></span>
+                            <span class="badge-contato bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded font-medium">Últ. Contato: <strong>${ultimoHistorico.contato}</strong></span>
                             ${complementoHtml}
                             ${complexoBadge}
                             ${tabBadge}
@@ -1011,12 +1051,12 @@
                 const inativos = filtrados.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
 
                 return `
-                    <tr onclick="filtrarPorPainelPrograma('${cat.chave}')" class="hover:bg-slate-700/80 cursor-pointer transition">
-                        <td class="p-2.5 font-semibold text-emerald-300 underline">${cat.nome}</td>
-                        <td class="p-2.5 text-center font-bold text-emerald-400">${total}</td>
-                        <td class="p-2.5 text-center text-blue-400 font-semibold">${ativos}</td>
-                        <td class="p-2.5 text-center text-red-400 font-semibold">${urgentes}</td>
-                        <td class="p-2.5 text-center text-amber-400 font-semibold">${inativos}</td>
+                    <tr onclick="filtrarPorPainelPrograma('${cat.chave}')" class="hover:bg-slate-700/40 cursor-pointer transition">
+                        <td class="p-2.5 font-semibold text-emerald-500 underline">${cat.nome}</td>
+                        <td class="p-2.5 text-center font-bold text-emerald-500">${total}</td>
+                        <td class="p-2.5 text-center text-blue-500 font-semibold">${ativos}</td>
+                        <td class="p-2.5 text-center text-red-500 font-semibold">${urgentes}</td>
+                        <td class="p-2.5 text-center text-amber-500 font-semibold">${inativos}</td>
                     </tr>
                 `;
             }).join('');
@@ -1032,9 +1072,9 @@
             for(let r in contagemRuas) {
                 let sigla = obterIniciaisPorNome(r);
                 ruasHtml += `
-                    <tr onclick="filtrarPorPainelRua('${r}')" class="hover:bg-slate-700/80 cursor-pointer transition">
-                        <td class="p-2.5 font-medium text-emerald-300 underline">${r}</td>
-                        <td class="p-2.5 text-center font-bold text-emerald-400">${sigla}</td>
+                    <tr onclick="filtrarPorPainelRua('${r}')" class="hover:bg-slate-700/40 cursor-pointer transition">
+                        <td class="p-2.5 font-medium text-emerald-500 underline">${r}</td>
+                        <td class="p-2.5 text-center font-bold text-emerald-500">${sigla}</td>
                         <td class="p-2.5 text-center font-semibold text-white">${contagemRuas[r]}</td>
                     </tr>
                 `;
