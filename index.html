@@ -232,7 +232,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família.</p>
+                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família. Se você já tiver dados preenchidos, eles serão mantidos.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -636,13 +636,11 @@
             renderizarPacientes();
         }
 
-        // Função ao clicar em uma linha do programa no Painel Quantitativo
         function filtrarPorPainelPrograma(chaveProg) {
             mudarAba('pacientes');
             filtrarPrograma(chaveProg);
         }
 
-        // Função ao clicar em uma rua no Painel Quantitativo
         function filtrarPorPainelRua(nomeRua) {
             mudarAba('pacientes');
             ruasSelecionadasPac.clear();
@@ -1273,32 +1271,61 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    const dados = results.data;
-                    pacientes = dados.map((row, idx) => {
+                    const dadosNovos = results.data;
+                    
+                    // Mapeia os dados atuais para preservar histórico e anotações baseando-se no nome e endereço
+                    let mapaExistente = {};
+                    pacientes.forEach(p => {
+                        let chaveUnica = `${p.nome.trim().toUpperCase()}|${(p.enderecoOriginal || p.endereco || "").trim().toUpperCase()}`;
+                        mapaExistente[chaveUnica] = p;
+                    });
+
+                    pacientes = dadosNovos.map((row, idx) => {
+                        const nomeNovo = (row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido').trim();
                         const ruaOriginal = (row['Endereço'] || row['endereco'] || 'Rua Principal').trim();
-                        return {
-                            id: idx + 1,
-                            programa: row['Programas'] || row['programa'] || 'Geral',
-                            nome: row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido',
-                            idade: row['Idade'] || row['idade'] || 0,
-                            sexo: row['Sexo'] || row['sexo'] || 'F',
-                            enderecoOriginal: ruaOriginal.toUpperCase(),
-                            endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                            numero: row['Nº'] || row['numero'] || 'S/N',
-                            ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || new Date().toISOString().split('T')[0],
-                            periodo: 'Manhã',
-                            bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
-                            registrado: false,
-                            complemento: '',
-                            complexo: false, complexoTipos: '', complexoObs: '',
-                            tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
-                            historico: [],
-                            responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', trabalha: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
-                        };
+                        const chaveUnica = `${nomeNovo.toUpperCase()}|${ruaOriginal.toUpperCase()}`;
+
+                        // Se o paciente já existe no sistema, mantém suas anotações manuais, prontuários, complexos e tabagismo
+                        if (mapaExistente[chaveUnica]) {
+                            let pAntigo = mapaExistente[chaveUnica];
+                            return {
+                                ...pAntigo,
+                                id: idx + 1,
+                                programa: row['Programas'] || row['programa'] || pAntigo.programa,
+                                idade: row['Idade'] || row['idade'] || pAntigo.idade,
+                                sexo: row['Sexo'] || row['sexo'] || pAntigo.sexo,
+                                enderecoOriginal: ruaOriginal.toUpperCase(),
+                                endereco: formatarEnderecoParaIniciais(ruaOriginal),
+                                numero: row['Nº'] || row['numero'] || pAntigo.numero,
+                                ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || pAntigo.ultimaConsulta,
+                                bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || pAntigo.bolsaFamilia
+                            };
+                        } else {
+                            // Novo paciente vindo da planilha
+                            return {
+                                id: idx + 1,
+                                programa: row['Programas'] || row['programa'] || 'Geral',
+                                nome: nomeNovo,
+                                idade: row['Idade'] || row['idade'] || 0,
+                                sexo: row['Sexo'] || row['sexo'] || 'F',
+                                enderecoOriginal: ruaOriginal.toUpperCase(),
+                                endereco: formatarEnderecoParaIniciais(ruaOriginal),
+                                numero: row['Nº'] || row['numero'] || 'S/N',
+                                ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || new Date().toISOString().split('T')[0],
+                                periodo: 'Manhã',
+                                bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
+                                registrado: false,
+                                complemento: '',
+                                complexo: false, complexoTipos: '', complexoObs: '',
+                                tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
+                                historico: [],
+                                responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', trabalha: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
+                            };
+                        }
                     });
 
                     localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
-                    alert(`Sucesso! ${pacientes.length} registros importados.`);
+                    alert(`Sucesso! ${pacientes.length} registros atualizados mantendo as anotações anteriores.`);
                     mudarAba('pacientes');
                     renderizarPacientes();
                 }
