@@ -282,7 +282,7 @@
             <!-- PREVIEW DO RELATÓRIO A4 -->
             <div id="container-relatorio-a4" class="bg-white text-slate-900 p-6 rounded-xl shadow-lg print:p-0 print:shadow-none">
                 <div class="text-center border-b border-slate-300 pb-3 mb-4">
-                    <h2 class="text-base font-bold uppercase tracking-wide">Relatório de Indicadores - ACS Cristiane G. Kutsk</h2>
+                    <h2 class="text-base font-bold uppercase tracking-wide">Relatório de Indicadores - Cristiane G. Kutsk</h2>
                     <p class="text-xs text-slate-600">Atenção Primária à Saúde — Saúde Brasil 360</p>
                 </div>
                 <div id="corpo-tabela-relatorio"></div>
@@ -297,7 +297,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg text-white">📋 Atualizar por Copiar e Colar (Por Indicador)</h2>
-                <p class="text-xs text-slate-300">Selecione o indicador abaixo, cole a tabela do sistema da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. As idades das crianças serão calculadas automaticamente em anos e meses.</p>
+                <p class="text-xs text-slate-300">Selecione o indicador abaixo, cole a tabela copiada da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. A idade será lida diretamente da coluna de idade.</p>
                 
                 <!-- SUBMENUS DE INDICADORES PARA COLAR -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -563,44 +563,6 @@
             return str;
         }
 
-        // FUNÇÃO PRECISA DE IDADE (ANOS, MESES E DIAS) BASEADA NA DATA DE NASCIMENTO
-        function calcularIdadeFormatada(dtNascStr) {
-            if(!dtNascStr || dtNascStr === '-') return '0 dias';
-            let dtNasc;
-            if(dtNascStr instanceof Date) {
-                dtNasc = dtNascStr;
-            } else if(typeof dtNascStr === 'string' && dtNascStr.includes('/')) {
-                const p = dtNascStr.split('/');
-                if(p.length === 3) dtNasc = new Date(`${p[2]}-${p[1]}-${p[0]}`);
-            } else {
-                dtNasc = new Date(dtNascStr);
-            }
-            if(!dtNasc || isNaN(dtNasc)) return '0 dias';
-
-            const hoje = new Date();
-            let anos = hoje.getFullYear() - dtNasc.getFullYear();
-            let meses = hoje.getMonth() - dtNasc.getMonth();
-            let dias = hoje.getDate() - dtNasc.getDate();
-
-            if (dias < 0) {
-                meses--;
-                const ultimoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
-                dias += ultimoMes.getDate();
-            }
-            if (meses < 0) {
-                anos--;
-                meses += 12;
-            }
-
-            if (anos > 0) {
-                return meses > 0 ? `${anos} ano${anos > 1 ? 's' : ''} e ${meses} m${meses > 1 ? 'eses' : 'ês'}` : `${anos} ano${anos > 1 ? 's' : ''}`;
-            } else if (meses > 0) {
-                return `${meses} m${meses > 1 ? 'eses' : 'ês'}`;
-            } else {
-                return `${dias} dia${dias > 1 ? 's' : ''}`;
-            }
-        }
-
         function ehRuaValida(nomeRua) {
             if(!nomeRua) return false;
             const limpo = String(nomeRua).trim().toUpperCase();
@@ -649,7 +611,7 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
+                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
             ];
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
         }
@@ -1068,8 +1030,7 @@
                 let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-400 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'}</span>` : '';
 
                 let nomeExibicao = p.nome || 'Usuário Sem Nome';
-                // Usa a idade calculada rigorosamente por anos/meses a partir da Data de Nascimento
-                let idadeExibicao = progU.includes('CRIANCA') ? calcularIdadeFormatada(p.dtNascimento) : (p.dtNascimento ? calcularIdadeFormatada(p.dtNascimento).split(' e ')[0] : '30 anos');
+                let idadeExibicao = (p.idade !== undefined && p.idade !== "") ? `${p.idade} anos` : '0 anos';
                 let sexoExibicao = p.sexo || 'N/I';
                 let endExibicao = p.enderecoOriginal || p.endereco || 'Rua Principal';
                 let numExibicao = p.numero || 'S/N';
@@ -1237,7 +1198,7 @@
             window.print();
         }
 
-        // MOTOR DE PROCESSAMENTO DE COLAGEM COM CAPTURA CORRETA DE DATAS DE NASCIMENTO
+        // MOTOR DE PROCESSAMENTO DE COLAGEM LEVANDO EM CONTA A IDADE DIRETA DA TABELA
         function processarColagemIndicador(nomeIndicador, programaPadrao, classificacaoPadrao) {
             const texto = document.getElementById(`texto-colar-${nomeIndicador}`).value.trim();
             if(!texto) {
@@ -1273,16 +1234,30 @@
                 let rua = '';
                 let num = 'S/N';
                 let dtNasc = '';
+                let idade = 0;
                 let sexo = 'F';
                 let dtCons = new Date().toISOString().split('T')[0];
                 let bolsa = 'NÃO';
 
-                // Captura datas no formato DD/MM/AAAA (A primeira geralmente é nascimento, a segunda é última consulta)
+                // Captura datas no formato DD/MM/AAAA
                 let matchesDatas = linha.match(/(\d{2}\/\d{2}\/\d{4})/g);
                 if (matchesDatas && matchesDatas.length > 0) {
                     dtNasc = matchesDatas[0];
                     if (matchesDatas.length > 1) {
                         dtCons = matchesDatas[1];
+                    }
+                }
+
+                // Procura a idade exata (número isolado pequeno após a data de nascimento ou nas colunas)
+                let matchesNumeros = linha.match(/\b(\d{1,3})\b/g);
+                if (matchesNumeros) {
+                    for (let numStr of matchesNumeros) {
+                        let n = parseInt(numStr);
+                        // Se estiver na faixa de idade plausível (0 a 110)
+                        if (n >= 0 && n <= 110 && !matchDataOuAno(numStr, dtNasc)) {
+                            idade = n;
+                            break;
+                        }
                     }
                 }
 
@@ -1324,6 +1299,7 @@
                         classificacao: classificacaoPadrao,
                         nome: nome.toUpperCase(),
                         dtNascimento: dtNasc || '01/01/2024',
+                        idade: idade,
                         sexo: sexo,
                         enderecoOriginal: rua.toUpperCase(),
                         endereco: formatarEnderecoParaIniciais(rua),
@@ -1351,6 +1327,12 @@
             alert(`Sucesso! Foram importados ${novosAdicionados} pacientes válidos para ${nomeIndicador} (filtrados estritamente para os blocos da sua microárea).`);
             mudarAba('pacientes');
             renderizarPacientes();
+        }
+
+        function matchDataOuAno(strNum, dtNasc) {
+            if (dtNasc && dtNasc.includes(strNum)) return true;
+            if (strNum.length === 4 && (strNum.startsWith('20') || strNum.startsWith('19'))) return true;
+            return false;
         }
 
         function carregarDadosExemplo() {
