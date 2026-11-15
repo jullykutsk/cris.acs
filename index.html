@@ -297,7 +297,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg text-white">📋 Atualizar por Copiar e Colar (Por Indicador)</h2>
-                <p class="text-xs text-slate-300">Selecione o indicador abaixo, copie a tabela do sistema da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. O sistema interpretará corretamente os nomes e endereços, mantendo apenas as ruas dos seus blocos.</p>
+                <p class="text-xs text-slate-300">Selecione o indicador abaixo, cole a tabela do sistema da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. As idades das crianças serão calculadas automaticamente em anos e meses.</p>
                 
                 <!-- SUBMENUS DE INDICADORES PARA COLAR -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -341,7 +341,7 @@
                         <button onclick="processarColagemIndicador('Criancas', 'CRIANCA', 'ROTINA')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 rounded-lg text-xs transition">Salvar Crianças</button>
                     </div>
 
-                    <!-- IDOSOS (Ocupa 2 colunas em telas maiores) -->
+                    <!-- IDOSOS -->
                     <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2 sm:col-span-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-xs text-emerald-400">👴 Idosos</span>
@@ -563,18 +563,19 @@
             return str;
         }
 
-        function calcularIdadeAnosMesesDias(dtNascStr) {
-            if(!dtNascStr) return { anos: 0, meses: 0, dias: 0 };
+        // FUNÇÃO PRECISA DE IDADE (ANOS, MESES E DIAS) BASEADA NA DATA DE NASCIMENTO
+        function calcularIdadeFormatada(dtNascStr) {
+            if(!dtNascStr || dtNascStr === '-') return '0 dias';
             let dtNasc;
             if(dtNascStr instanceof Date) {
                 dtNasc = dtNascStr;
             } else if(typeof dtNascStr === 'string' && dtNascStr.includes('/')) {
                 const p = dtNascStr.split('/');
-                dtNasc = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+                if(p.length === 3) dtNasc = new Date(`${p[2]}-${p[1]}-${p[0]}`);
             } else {
                 dtNasc = new Date(dtNascStr);
             }
-            if(isNaN(dtNasc)) return { anos: 0, meses: 0, dias: 0 };
+            if(!dtNasc || isNaN(dtNasc)) return '0 dias';
 
             const hoje = new Date();
             let anos = hoje.getFullYear() - dtNasc.getFullYear();
@@ -590,7 +591,14 @@
                 anos--;
                 meses += 12;
             }
-            return { anos, meses, dias };
+
+            if (anos > 0) {
+                return meses > 0 ? `${anos} ano${anos > 1 ? 's' : ''} e ${meses} m${meses > 1 ? 'eses' : 'ês'}` : `${anos} ano${anos > 1 ? 's' : ''}`;
+            } else if (meses > 0) {
+                return `${meses} m${meses > 1 ? 'eses' : 'ês'}`;
+            } else {
+                return `${dias} dia${dias > 1 ? 's' : ''}`;
+            }
         }
 
         function ehRuaValida(nomeRua) {
@@ -641,7 +649,7 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
+                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
             ];
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
         }
@@ -1024,12 +1032,7 @@
                         } else if(filtroAtualPrograma === 'GESTANTES') {
                             matchProg = classifStr.includes('GESTANTE');
                         } else if(filtroAtualPrograma === 'CRIANCAS') {
-                            if(progStr.includes('CRIANCA')) {
-                                const im = calcularIdadeAnosMesesDias(p.dtNascimento);
-                                matchProg = im.anos < 2;
-                            } else {
-                                matchProg = false;
-                            }
+                            matchProg = progStr.includes('CRIANCA');
                         }
                     }
                 }
@@ -1065,7 +1068,8 @@
                 let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-400 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'}</span>` : '';
 
                 let nomeExibicao = p.nome || 'Usuário Sem Nome';
-                let idadeExibicao = p.idade !== undefined && p.idade !== "" ? p.idade : '0';
+                // Usa a idade calculada rigorosamente por anos/meses a partir da Data de Nascimento
+                let idadeExibicao = progU.includes('CRIANCA') ? calcularIdadeFormatada(p.dtNascimento) : (p.dtNascimento ? calcularIdadeFormatada(p.dtNascimento).split(' e ')[0] : '30 anos');
                 let sexoExibicao = p.sexo || 'N/I';
                 let endExibicao = p.enderecoOriginal || p.endereco || 'Rua Principal';
                 let numExibicao = p.numero || 'S/N';
@@ -1087,7 +1091,7 @@
                             </div>
                         </div>
                         <div class="caixa-info-paciente grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-white bg-slate-700/30 p-2.5 rounded-lg border border-slate-600/40">
-                            <div><span class="label-info text-slate-300 block font-medium">Idade / Sexo:</span> <span class="valor-info font-bold">${idadeExibicao} anos · ${sexoExibicao}</span></div>
+                            <div><span class="label-info text-slate-300 block font-medium">Idade / Sexo:</span> <span class="valor-info font-bold">${idadeExibicao} · ${sexoExibicao}</span></div>
                             <div><span class="label-info text-slate-300 block font-medium">Endereço:</span> <span class="valor-info font-bold">${endExibicao}, ${numExibicao}${bairroExibicao}</span></div>
                             <div><span class="label-info text-slate-300 block font-medium">Bolsa Família:</span> <span class="valor-info font-bold">${p.bolsaFamilia || 'Não'}</span></div>
                         </div>
@@ -1127,13 +1131,7 @@
                     if(cat.chave === 'HIPERTENSOS') return progStr.includes('HIPERTENSO');
                     if(cat.chave === 'DIABETICOS') return progStr.includes('DIABETICO');
                     if(cat.chave === 'GESTANTES') return classifStr.includes('GESTANTE');
-                    if(cat.chave === 'CRIANCAS') {
-                        if(progStr.includes('CRIANCA')) {
-                            const im = calcularIdadeAnosMesesDias(p.dtNascimento);
-                            return im.anos < 2;
-                        }
-                        return false;
-                    }
+                    if(cat.chave === 'CRIANCAS') return progStr.includes('CRIANCA');
                     return false;
                 });
 
@@ -1239,7 +1237,7 @@
             window.print();
         }
 
-        // MOTOR ROBUSTO DE PROCESSAMENTO DE COLAGEM (IDENTIFICAÇÃO INTELIGENTE DE CAMPOS)
+        // MOTOR DE PROCESSAMENTO DE COLAGEM COM CAPTURA CORRETA DE DATAS DE NASCIMENTO
         function processarColagemIndicador(nomeIndicador, programaPadrao, classificacaoPadrao) {
             const texto = document.getElementById(`texto-colar-${nomeIndicador}`).value.trim();
             if(!texto) {
@@ -1259,7 +1257,6 @@
                 return true;
             });
 
-            // Se o texto vier compactado sem tabulação (linhas coladas juntas), tentamos extrair por blocos de rua
             let linhas = texto.split('\n');
             let novosAdicionados = 0;
 
@@ -1269,7 +1266,6 @@
 
                 let colunas = linha.split('\t');
                 if (colunas.length < 2) {
-                    // Tenta separar por múltiplos espaços se não houver tabulação
                     colunas = linha.split(/[\t]{1,}|(?:\s{2,})/);
                 }
 
@@ -1277,79 +1273,48 @@
                 let rua = '';
                 let num = 'S/N';
                 let dtNasc = '';
-                let idade = 0;
                 let sexo = 'F';
                 let dtCons = new Date().toISOString().split('T')[0];
-                let hba1c = '';
-                let coleta = '';
                 let bolsa = 'NÃO';
 
-                // Se houver colunas tabuladas padrão da prefeitura
-                if (colunas.length >= 3) {
-                    colunas.forEach(c => {
-                        let val = c.trim();
-                        if(!val) return;
-                        // Procura rua válida
-                        if (ehRuaValida(val)) {
-                            rua = val;
-                        } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-                            if(!dtNasc) dtNasc = val;
-                            else dtCons = val;
-                        } else if (/^[0-9]{1,3}$/.test(val) && parseInt(val) < 110 && !idade) {
-                            idade = parseInt(val);
-                        } else if (val === 'M' || val === 'F') {
-                            sexo = val;
-                        } else if (/^\d+$/.test(val) && parseInt(val) < 9999 && rua && num === 'S/N') {
-                            num = val;
-                        } else if (val.length > 5 && /^[A-ZÀ-Ú\s\.\/]+$/.test(val) && !val.includes('RUA') && !val.includes('PSF') && !val.includes('CRIANCA') && !val.includes('IDOSO')) {
-                            if(!nome) nome = val;
-                        }
-                    });
-                }
-
-                // Fallback inteligente extraindo direto do texto corrido (caso venha tudo colado)
-                if (!nome || !rua) {
-                    for (let ruaValida of RUAS_VALIDAS_MICROAREA) {
-                        if (linha.toUpperCase().includes(ruaValida)) {
-                            rua = ruaValida;
-                            // O nome geralmente vem antes da data de nascimento ou antes da rua
-                            let partesRua = linha.toUpperCase().split(ruaValida);
-                            let antesRua = partesRua[0];
-                            // Limpa termos de programas e lixo do sistema
-                            antesRua = antesRua.replace(/CRIANÇA NORMAL \/ ROTINA|CRIANCA|SAUDE DO IDOSO|HIPERTENSO|DIABETICO|ROBUSTO|RISCO AO NASCER|RISCO EVOLUTIVO BIOLOGICO/gi, '').trim();
-                            if (antesRua.length > 3) {
-                                // Pega a última parte que pareça nome
-                                let palavras = antesRua.split(/\s+/);
-                                if (palavras.length > 0) {
-                                    nome = palavras.slice(-4).join(' '); // últimas palavras antes da rua
-                                }
-                            }
-                            
-                            // Extrai número após a rua
-                            let depoisRua = partesRua[1];
-                            if (depoisRua) {
-                                let matchNum = depoisRua.trim().match(/^(\d+)/);
-                                if (matchNum) num = matchNum[1];
-                            }
-                            break;
-                        }
+                // Captura datas no formato DD/MM/AAAA (A primeira geralmente é nascimento, a segunda é última consulta)
+                let matchesDatas = linha.match(/(\d{2}\/\d{2}\/\d{4})/g);
+                if (matchesDatas && matchesDatas.length > 0) {
+                    dtNasc = matchesDatas[0];
+                    if (matchesDatas.length > 1) {
+                        dtCons = matchesDatas[1];
                     }
                 }
-
-                // Extrai data de nascimento (formato DD/MM/AAAA)
-                let matchData = linha.match(/(\d{2}\/\d{2}\/\d{4})/);
-                if (matchData && !dtNasc) dtNasc = matchData[1];
 
                 // Extrai sexo M ou F isolado
                 let matchSexo = linha.match(/\b(M|F)\b/);
                 if (matchSexo) sexo = matchSexo[1];
 
-                // Extrai idade
-                let matchIdade = linha.match(/\b(\d{1,3})\s*(?:anos?|a)?\b/i);
-                if (matchIdade && parseInt(matchIdade[1]) < 110) idade = parseInt(matchIdade[1]);
+                // Identifica a rua válida
+                for (let ruaValida of RUAS_VALIDAS_MICROAREA) {
+                    if (linha.toUpperCase().includes(ruaValida)) {
+                        rua = ruaValida;
+                        let partesRua = linha.toUpperCase().split(ruaValida);
+                        let antesRua = partesRua[0];
+                        
+                        // Limpa termos de programas para sobrar o nome
+                        antesRua = antesRua.replace(/CRIANÇA NORMAL \/ ROTINA|CRIANCA|SAUDE DO IDOSO|HIPERTENSO|DIABETICO|ROBUSTO|RISCO AO NASCER|RISCO EVOLUTIVO BIOLOGICO|UMS UMBARA II PSF|PROGRAMA|CLASSIFICACAO/gi, '').trim();
+                        if (antesRua.length > 3) {
+                            let palavras = antesRua.split(/\s+/);
+                            nome = palavras.slice(-4).join(' ');
+                        }
+                        
+                        // Extrai número após a rua
+                        let depoisRua = partesRua[1];
+                        if (depoisRua) {
+                            let matchNum = depoisRua.trim().match(/^(\d+)/);
+                            if (matchNum) num = matchNum[1];
+                        }
+                        break;
+                    }
+                }
 
                 if (nome && ehRuaValida(rua)) {
-                    // Limpa ruídos do nome se houver
                     nome = nome.replace(/PROGRAMA|CLASSIFICACAO|USUARIO|DT NASCIMENTO|IDADE|SEXO|ENDERECO|Nº|SITUACAO/gi, '').trim();
                     if(nome.length < 3) return;
 
@@ -1358,8 +1323,7 @@
                         programa: programaPadrao,
                         classificacao: classificacaoPadrao,
                         nome: nome.toUpperCase(),
-                        dtNascimento: dtNasc || '01/01/1970',
-                        idade: idade || 30,
+                        dtNascimento: dtNasc || '01/01/2024',
                         sexo: sexo,
                         enderecoOriginal: rua.toUpperCase(),
                         endereco: formatarEnderecoParaIniciais(rua),
@@ -1367,8 +1331,8 @@
                         bairro: 'Centro',
                         ultimaConsulta: dtCons,
                         situacao: 'ATIVO',
-                        hemoglobinaGlicosilada: hba1c,
-                        dataColeta: coleta,
+                        hemoglobinaGlicosilada: '',
+                        dataColeta: '',
                         bolsaFamilia: bolsa,
                         periodo: 'Manhã',
                         registrado: false,
