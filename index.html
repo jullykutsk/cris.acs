@@ -297,7 +297,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg text-white">📋 Atualizar por Copiar e Colar (Por Indicador)</h2>
-                <p class="text-xs text-slate-300">Selecione o indicador abaixo, selecione as linhas direto na planilha do sistema da prefeitura, copie (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. O sistema atualizará os pacientes e filtrará apenas as ruas dos seus blocos.</p>
+                <p class="text-xs text-slate-300">Selecione o indicador abaixo, copie a tabela do sistema da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. O sistema interpretará corretamente os nomes e endereços, mantendo apenas as ruas dos seus blocos.</p>
                 
                 <!-- SUBMENUS DE INDICADORES PARA COLAR -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -1239,7 +1239,7 @@
             window.print();
         }
 
-        // FUNÇÃO INTELIGENTE DE PROCESSAR COPIAR E COLAR POR INDICADOR
+        // MOTOR ROBUSTO DE PROCESSAMENTO DE COLAGEM (IDENTIFICAÇÃO INTELIGENTE DE CAMPOS)
         function processarColagemIndicador(nomeIndicador, programaPadrao, classificacaoPadrao) {
             const texto = document.getElementById(`texto-colar-${nomeIndicador}`).value.trim();
             if(!texto) {
@@ -1247,10 +1247,7 @@
                 return;
             }
 
-            const linhas = texto.split('\n');
-            let novosAdicionados = 0;
-
-            // Remove pacientes antigos deste indicador específico para atualizar com a nova colagem
+            // Remove pacientes antigos deste indicador específico antes de atualizar
             pacientes = pacientes.filter(p => {
                 const prog = (p.programa || "").toUpperCase();
                 const classif = (p.classificacao || "").toUpperCase();
@@ -1262,12 +1259,20 @@
                 return true;
             });
 
-            linhas.forEach(linha => {
-                const colunas = linha.split('\t');
-                if (colunas.length < 2) return; // ignora linhas vazias ou mal formatadas
+            // Se o texto vier compactado sem tabulação (linhas coladas juntas), tentamos extrair por blocos de rua
+            let linhas = texto.split('\n');
+            let novosAdicionados = 0;
 
-                // Tenta achar colunas úteis colando do Excel/Tabela
-                // Geralmente: Programa, Classificação, Usuário, Dt Nasc, Idade, Sexo, Endereço, Nº, etc.
+            linhas.forEach(linha => {
+                linha = linha.trim();
+                if(!linha || linha.length < 5) return;
+
+                let colunas = linha.split('\t');
+                if (colunas.length < 2) {
+                    // Tenta separar por múltiplos espaços se não houver tabulação
+                    colunas = linha.split(/[\t]{1,}|(?:\s{2,})/);
+                }
+
                 let nome = '';
                 let rua = '';
                 let num = 'S/N';
@@ -1279,34 +1284,75 @@
                 let coleta = '';
                 let bolsa = 'NÃO';
 
-                // Varre as colunas buscando heurísticas
-                colunas.forEach((col, idx) => {
-                    let val = col.trim();
-                    if(!val) return;
-                    if(val.length > 6 && /^[A-Z\s\.]+$/.test(val) && !nome && !val.includes('RUA')) {
-                        nome = val;
-                    }
-                    if(val.toUpperCase().includes('RUA') || ehRuaValida(val)) {
-                        rua = val;
-                    }
-                    if(/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !dtNasc) {
-                        dtNasc = val;
-                    } else if(/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-                        dtCons = val;
-                    }
-                    if(/^\d{1,3}$/.test(val) && parseInt(val) < 110 && !idade) {
-                        idade = parseInt(val);
-                    }
-                    if(val === 'M' || val === 'F') {
-                        sexo = val;
-                    }
-                    if(/^\d+$/.test(val) && parseInt(val) < 9999 && rua && num === 'S/N') {
-                        num = val;
-                    }
-                });
+                // Se houver colunas tabuladas padrão da prefeitura
+                if (colunas.length >= 3) {
+                    colunas.forEach(c => {
+                        let val = c.trim();
+                        if(!val) return;
+                        // Procura rua válida
+                        if (ehRuaValida(val)) {
+                            rua = val;
+                        } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                            if(!dtNasc) dtNasc = val;
+                            else dtCons = val;
+                        } else if (/^[0-9]{1,3}$/.test(val) && parseInt(val) < 110 && !idade) {
+                            idade = parseInt(val);
+                        } else if (val === 'M' || val === 'F') {
+                            sexo = val;
+                        } else if (/^\d+$/.test(val) && parseInt(val) < 9999 && rua && num === 'S/N') {
+                            num = val;
+                        } else if (val.length > 5 && /^[A-ZÀ-Ú\s\.\/]+$/.test(val) && !val.includes('RUA') && !val.includes('PSF') && !val.includes('CRIANCA') && !val.includes('IDOSO')) {
+                            if(!nome) nome = val;
+                        }
+                    });
+                }
 
-                // Se encontrou pelo menos um nome e a rua pertence à microárea
+                // Fallback inteligente extraindo direto do texto corrido (caso venha tudo colado)
+                if (!nome || !rua) {
+                    for (let ruaValida of RUAS_VALIDAS_MICROAREA) {
+                        if (linha.toUpperCase().includes(ruaValida)) {
+                            rua = ruaValida;
+                            // O nome geralmente vem antes da data de nascimento ou antes da rua
+                            let partesRua = linha.toUpperCase().split(ruaValida);
+                            let antesRua = partesRua[0];
+                            // Limpa termos de programas e lixo do sistema
+                            antesRua = antesRua.replace(/CRIANÇA NORMAL \/ ROTINA|CRIANCA|SAUDE DO IDOSO|HIPERTENSO|DIABETICO|ROBUSTO|RISCO AO NASCER|RISCO EVOLUTIVO BIOLOGICO/gi, '').trim();
+                            if (antesRua.length > 3) {
+                                // Pega a última parte que pareça nome
+                                let palavras = antesRua.split(/\s+/);
+                                if (palavras.length > 0) {
+                                    nome = palavras.slice(-4).join(' '); // últimas palavras antes da rua
+                                }
+                            }
+                            
+                            // Extrai número após a rua
+                            let depoisRua = partesRua[1];
+                            if (depoisRua) {
+                                let matchNum = depoisRua.trim().match(/^(\d+)/);
+                                if (matchNum) num = matchNum[1];
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // Extrai data de nascimento (formato DD/MM/AAAA)
+                let matchData = linha.match(/(\d{2}\/\d{2}\/\d{4})/);
+                if (matchData && !dtNasc) dtNasc = matchData[1];
+
+                // Extrai sexo M ou F isolado
+                let matchSexo = linha.match(/\b(M|F)\b/);
+                if (matchSexo) sexo = matchSexo[1];
+
+                // Extrai idade
+                let matchIdade = linha.match(/\b(\d{1,3})\s*(?:anos?|a)?\b/i);
+                if (matchIdade && parseInt(matchIdade[1]) < 110) idade = parseInt(matchIdade[1]);
+
                 if (nome && ehRuaValida(rua)) {
+                    // Limpa ruídos do nome se houver
+                    nome = nome.replace(/PROGRAMA|CLASSIFICACAO|USUARIO|DT NASCIMENTO|IDADE|SEXO|ENDERECO|Nº|SITUACAO/gi, '').trim();
+                    if(nome.length < 3) return;
+
                     pacientes.push({
                         id: Date.now() + Math.random(),
                         programa: programaPadrao,
@@ -1338,7 +1384,7 @@
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
             document.getElementById(`texto-colar-${nomeIndicador}`).value = '';
             atualizarContadoresColados();
-            alert(`Sucesso! Foram importados ${novosAdicionados} pacientes válidos para ${nomeIndicador} (filtrados para os blocos da sua microárea).`);
+            alert(`Sucesso! Foram importados ${novosAdicionados} pacientes válidos para ${nomeIndicador} (filtrados estritamente para os blocos da sua microárea).`);
             mudarAba('pacientes');
             renderizarPacientes();
         }
