@@ -870,3 +870,505 @@
     </script>
 </body>
 </html>
+    <!-- SCRIPT DE LÓGICA -->
+    <script>
+        const BLOCOS_RUAS = {
+            1: [
+                { nome: "RUA ANTONIO MATHEUS", iniciais: "AM" },
+                { nome: "RUA PIERINA BERTUZZI BORIN", iniciais: "PBB" },
+                { nome: "RUA NATHALIA BOZZA", iniciais: "NB" },
+                { nome: "RUA EDUARDO PINTO DA ROCHA", iniciais: "EP" },
+                { nome: "RUA ROSA CAVICHIOLO NICHELE", iniciais: "RCN" }
+            ],
+            2: [
+                { nome: "RUA PAULO ESTEPHANO CAVICHIOLO", iniciais: "PEC" },
+                { nome: "RUA JOSE ANTONIO NICHELE", iniciais: "JAN" },
+                { nome: "RUA AGOSTINHO ZANIOLO", iniciais: "AZ" },
+                { nome: "RUA LUIZ NICHELE", iniciais: "LN" }
+            ],
+            3: [
+                { nome: "RUA ANGELO GAI", iniciais: "AG" },
+                { nome: "RUA ANGELA GABARDO PAROLIN", iniciais: "AGP" },
+                { nome: "RUA SANTA TEREZINHA", iniciais: "ST" }
+            ]
+        };
+
+        let pacientes = JSON.parse(localStorage.getItem('acs_pacientes_oficial')) || [];
+        let filtroAtualStatus = 'TODOS';
+        let filtroAtualPrograma = 'TODOS';
+        let ruasSelecionadasPac = new Set();
+        let ruasSelecionadasRel = new Set();
+
+        function formatarDataParaISO(dataStr) {
+            if(!dataStr || dataStr === '-') return new Date().toISOString().split('T')[0];
+            if(dataStr.includes('-')) return dataStr;
+            const partes = dataStr.split('/');
+            if(partes.length === 3) return `${partes[2]}-${partes[1]}-${partes[0]}`;
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function formatarDataParaBR(dataIso) {
+            if(!dataIso) return '-';
+            const partes = dataIso.split('-');
+            if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            return dataIso;
+        }
+
+        function formatarProgramaAbreviado(texto) {
+            if(!texto) return 'GERAL';
+            let t = texto.toUpperCase();
+            let lista = [];
+
+            if(t.includes('HIPERTENS') || t.includes('HAS')) lista.push('HAS');
+            if(t.includes('DIABET') || t.includes('DM')) lista.push('DM');
+            if(t.includes('GESTA') || t.includes('GES')) lista.push('GES');
+            if(t.includes('CRIANÇA') || t.includes('CR')) lista.push('CR');
+            if(t.includes('IDOSO') || t.includes('ID')) lista.push('ID');
+            if(t.includes('BOLSA') || t.includes('BLSA')) lista.push('BLSA');
+
+            if(lista.length > 0) return lista.join(' / ');
+            return texto;
+        }
+
+        function extrairNumeroSemanas(strSemanas) {
+            if(!strSemanas) return 0;
+            const match = strSemanas.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+        }
+
+        function calcularMeses(dataStr) {
+            if(!dataStr || dataStr === '-') return 0;
+            const iso = formatarDataParaISO(dataStr);
+            const dataConsulta = new Date(iso);
+            const hoje = new Date();
+            const diffTime = hoje - dataConsulta;
+            return (diffTime / (1000 * 60 * 60 * 24)) / 30;
+        }
+
+        function avaliarStatusVisita(p) {
+            if(p.situacao && p.situacao.toUpperCase().includes('INATIV')) return 'Inativo';
+            const meses = calcularMeses(p.ultimaConsulta);
+            if (meses > 6) return 'Inativo';
+            if (meses >= 5) return 'Urgente';
+            return 'Ativo';
+        }
+
+        function formatarEnderecoParaIniciais(nomeRua) {
+            if(!nomeRua) return 'RUA';
+            const limpo = nomeRua.trim().toUpperCase();
+            for(let b in BLOCOS_RUAS) {
+                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === limpo || limpo.includes(r.nome.toUpperCase()));
+                if(achado) return achado.iniciais;
+            }
+            return limpo;
+        }
+
+        if (pacientes.length === 0) {
+            pacientes = [
+                { id: 1, programa: "Gestantes", classificacao: "Gestante", nome: "Ana C. O.", dtNascimento: "1995-05-10", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", bairro: "Centro", ultimaConsulta: "2026-01-15", situacao: "Ativo", glicada: "", coletaColeta: "", bolsaFamilia: "Sim", registrado: false, complexo: false, tabagismo: false, semanas: "20 semanas", historico: [] }
+            ];
+            localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+        }
+
+        function mudarAba(aba) {
+            fecharTodosMenus();
+            ['pacientes', 'quantitativo', 'relatorios', 'config'].forEach(a => {
+                document.getElementById(`tab-${a}`).classList.add('hidden');
+                const btn = document.getElementById(`btn-aba-${a}`);
+                if(btn) { btn.classList.remove('text-emerald-400'); btn.classList.add('text-slate-400'); }
+            });
+            document.getElementById(`tab-${aba}`).classList.remove('hidden');
+            const btnAtivo = document.getElementById(`btn-aba-${aba}`);
+            if(btnAtivo) { btnAtivo.classList.remove('text-slate-400'); btnAtivo.classList.add('text-emerald-400'); }
+            if(aba === 'relatorios') construirTabelaRelatorioA4();
+            if(aba === 'quantitativo') construirPainelQuantitativo();
+        }
+
+        function atualizarEstatisticas() {
+            document.getElementById('stat-total').innerText = pacientes.length;
+            document.getElementById('stat-urgente').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Urgente').length;
+            document.getElementById('stat-ativos').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Ativo').length;
+            document.getElementById('stat-inativos').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
+        }
+
+        function filtrarPrograma(prog) {
+            filtroAtualPrograma = prog;
+            ['TODOS', 'DM', 'HAS', 'GES', 'CR', 'ID', 'BLSA', 'TAB', 'COMPLEXOS'].forEach(p => {
+                const btn = document.getElementById(`btn-prog-${p}`);
+                if(btn) {
+                    btn.className = (p === prog) ? "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition" : "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition";
+                }
+            });
+            renderizarPacientes();
+        }
+
+        function filtrarPorPainelPrograma(chaveProg) {
+            mudarAba('pacientes');
+            filtrarPrograma(chaveProg);
+        }
+
+        function filtrarPorPainelRua(nomeRua) {
+            mudarAba('pacientes');
+            ruasSelecionadasPac.clear();
+            ruasSelecionadasPac.add(nomeRua);
+            atualizarBadgesETags();
+            renderizarPacientes();
+        }
+
+        function construirMenusCheckbox() {
+            ['pac', 'rel'].forEach(prefixo => {
+                for(let b = 1; b <= 3; b++) {
+                    const container = document.getElementById(`menu-${prefixo}-${b}`);
+                    const setAtivo = prefixo === 'pac' ? ruasSelecionadasPac : ruasSelecionadasRel;
+                    let html = `<div class="flex justify-between items-center px-2 py-1 border-b border-slate-700 mb-1"><span class="text-[11px] font-bold text-slate-400 uppercase">Bloco 0${b}</span><button type="button" onclick="selecionarTodoBloco('${prefixo}', ${b})" class="text-[11px] text-emerald-400 hover:underline">Marcar</button></div>`;
+                    BLOCOS_RUAS[b].forEach(r => {
+                        const checked = setAtivo.has(r.nome) ? 'checked' : '';
+                        html += `<label class="flex items-center space-x-2.5 p-2 rounded-lg hover:bg-slate-700/70 cursor-pointer transition"><input type="checkbox" ${checked} onchange="alternarRua('${prefixo}', '${r.nome}')" class="w-4 h-4 rounded accent-emerald-500 bg-slate-900 border-slate-600"><div class="leading-tight"><span class="font-bold text-xs text-slate-100">${r.iniciais}</span><span class="block text-[10px] text-slate-400">${r.nome}</span></div></label>`;
+                    });
+                    container.innerHTML = html;
+                }
+            });
+            atualizarBadgesETags();
+        }
+
+        function toggleMenuBloco(prefixo, blocoNum) {
+            const alvo = document.getElementById(`menu-${prefixo}-${blocoNum}`);
+            const estavaOculto = alvo.classList.contains('hidden');
+            fecharTodosMenus();
+            if(estavaOculto) alvo.classList.remove('hidden');
+        }
+
+        function fecharTodosMenus() {
+            ['pac', 'rel'].forEach(p => {
+                for(let b = 1; b <= 3; b++) {
+                    const el = document.getElementById(`menu-${p}-${b}`);
+                    if(el) el.classList.add('hidden');
+                }
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if(!e.target.closest('.relative')) fecharTodosMenus();
+        });
+
+        function alternarRua(prefixo, nomeRua) {
+            const setAtivo = prefixo === 'pac' ? ruasSelecionadasPac : ruasSelecionadasRel;
+            if(setAtivo.has(nomeRua)) setAtivo.delete(nomeRua); else setAtivo.add(nomeRua);
+            atualizarBadgesETags();
+            if(prefixo === 'pac') renderizarPacientes(); else construirTabelaRelatorioA4();
+        }
+
+        function selecionarTodoBloco(prefixo, blocoNum) {
+            const setAtivo = prefixo === 'pac' ? ruasSelecionadasPac : ruasSelecionadasRel;
+            const ruasDoBloco = BLOCOS_RUAS[blocoNum].map(r => r.nome);
+            const todasMarcadas = ruasDoBloco.every(nome => setAtivo.has(nome));
+            if(todasMarcadas) ruasDoBloco.forEach(nome => setAtivo.delete(nome)); else ruasDoBloco.forEach(nome => setAtivo.add(nome));
+            construirMenusCheckbox();
+            if(prefixo === 'pac') renderizarPacientes(); else construirTabelaRelatorioA4();
+        }
+
+        function limparSelecaoRuas(prefixo) {
+            if(prefixo === 'pac') { ruasSelecionadasPac.clear(); } else { ruasSelecionadasRel.clear(); }
+            construirMenusCheckbox();
+            if(prefixo === 'pac') renderizarPacientes(); else construirTabelaRelatorioA4();
+        }
+
+        function obterIniciaisPorNome(nomeRua) {
+            for(let b in BLOCOS_RUAS) {
+                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === nomeRua.toUpperCase());
+                if(achado) return achado.iniciais;
+            }
+            return nomeRua;
+        }
+
+        function atualizarBadgesETags() {
+            ['pac', 'rel'].forEach(prefixo => {
+                const setAtivo = prefixo === 'pac' ? ruasSelecionadasPac : ruasSelecionadasRel;
+                for(let b = 1; b <= 3; b++) {
+                    const qtd = BLOCOS_RUAS[b].filter(r => setAtivo.has(r.nome)).length;
+                    const badge = document.getElementById(`badge-${prefixo}-${b}`);
+                    if(qtd > 0) { badge.innerText = qtd; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+                }
+                const tagsContainer = document.getElementById(`tags-${prefixo}-selecionadas`);
+                if(setAtivo.size === 0) {
+                    tagsContainer.innerHTML = `<span>${prefixo === 'pac' ? 'Exibindo: Todas as ruas' : 'Microárea Completa'}</span>`;
+                } else {
+                    tagsContainer.innerHTML = Array.from(setAtivo).map(nome => `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-md font-bold text-[11px]">${obterIniciaisPorNome(nome)}</span>`).join('');
+                }
+            });
+        }
+
+        function filtrarStatus(status) { filtroAtualStatus = status; renderizarPacientes(); }
+        function alternarRegistroPaciente(id) {
+            const p = pacientes.find(item => item.id === id);
+            if(p) { p.registrado = !p.registrado; localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes)); }
+        }
+
+        function checarAvisoVacinaModal() {
+            const num = extrairNumeroSemanas(document.getElementById('edit-semanas').value);
+            document.getElementById('aviso-vacina-gestante').classList.toggle('hidden', !(num >= 14 && num <= 27));
+        }
+
+        function toggleBlocoComplexo() {
+            document.getElementById('detalhes-complexo-div').classList.toggle('hidden', !document.getElementById('edit-complexo').checked);
+        }
+
+        function toggleBlocoTabagismo() {
+            document.getElementById('detalhes-tabagismo-div').classList.toggle('hidden', !document.getElementById('edit-tabagismo').checked);
+        }
+
+        function abrirModalEdicao(id) {
+            const p = pacientes.find(item => item.id === id);
+            if(!p) return;
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('modal-titulo').innerText = `Prontuário: ${p.nome}`;
+            document.getElementById('edit-ultima-visita').value = formatarDataParaISO(p.ultimaConsulta);
+            
+            document.getElementById('edit-complexo').checked = !!p.complexo;
+            document.getElementById('detalhes-complexo-div').classList.toggle('hidden', !p.complexo);
+            document.getElementById('edit-complexo-obs').value = p.complexoObs || '';
+            document.querySelectorAll('.chk-comp').forEach(chk => { chk.checked = (p.complexoTipos || "").includes(chk.value); });
+
+            document.getElementById('edit-tabagismo').checked = !!p.tabagismo;
+            document.getElementById('detalhes-tabagismo-div').classList.toggle('hidden', !p.tabagismo);
+            document.getElementById('edit-tab-obs').value = p.tabagismoObs || '';
+            document.querySelectorAll('.chk-tab').forEach(chk => { chk.checked = (p.tabagismoTipos || "").includes(chk.value); });
+
+            document.getElementById('edit-glicada').value = p.glicada || '';
+            document.getElementById('edit-coleta').value = p.coletaColeta || '';
+            document.getElementById('edit-semanas').value = p.semanas || '';
+
+            const histDiv = document.getElementById('historico-prontuario');
+            histDiv.innerHTML = (!p.historico || p.historico.length === 0) ? `<span class="text-slate-500">Nenhum registro.</span>` : p.historico.map(h => `<div class="bg-slate-800 p-1.5 rounded"><b>${h.data}</b>: ${h.motivo} - ${h.contato}</div>`).join('');
+
+            const progU = (p.programa || "").toUpperCase();
+            document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET') && !progU.includes('DM'));
+            document.getElementById('bloco-ges').classList.toggle('hidden', !progU.includes('GESTA') && !progU.includes('GES'));
+
+            document.getElementById('modal-edicao').classList.remove('hidden');
+        }
+
+        function fecharModal() { document.getElementById('modal-edicao').classList.add('hidden'); }
+
+        function salvarEdicaoPaciente() {
+            const p = pacientes.find(item => item.id === parseInt(document.getElementById('edit-id').value));
+            if(!p) return;
+            p.ultimaConsulta = formatarDataParaBR(document.getElementById('edit-ultima-visita').value);
+            
+            p.complexo = document.getElementById('edit-complexo').checked;
+            if(p.complexo) {
+                let t = []; document.querySelectorAll('.chk-comp').forEach(c => { if(c.checked) t.push(c.value); });
+                p.complexoTipos = t.join(' | '); p.complexoObs = document.getElementById('edit-complexo-obs').value.trim();
+            }
+
+            p.tabagismo = document.getElementById('edit-tabagismo').checked;
+            if(p.tabagismo) {
+                let t = []; document.querySelectorAll('.chk-tab').forEach(c => { if(c.checked) t.push(c.value); });
+                p.tabagismoTipos = t.join(' | '); p.tabagismoObs = document.getElementById('edit-tab-obs').value.trim();
+            }
+
+            p.glicada = document.getElementById('edit-glicada').value;
+            p.coletaColeta = document.getElementById('edit-coleta').value;
+            p.semanas = document.getElementById('edit-semanas').value;
+
+            const motivo = document.getElementById('edit-motivo-busca').value.trim();
+            const contato = document.getElementById('edit-visita-contato').value.trim();
+            if(motivo || contato) {
+                if(!p.historico) p.historico = [];
+                p.historico.unshift({ data: p.ultimaConsulta, motivo: motivo || '-', contato: contato || '-' });
+            }
+
+            localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+            fecharModal();
+            renderizarPacientes();
+        }
+
+        function renderizarPacientes() {
+            atualizarEstatisticas();
+            const busca = document.getElementById('input-busca').value.toLowerCase();
+            const listaDiv = document.getElementById('lista-pacientes');
+
+            let filtrados = pacientes.filter(p => {
+                const matchBusca = (p.nome || "").toLowerCase().includes(busca);
+                const endNorm = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
+                const matchRua = ruasSelecionadasPac.size === 0 || ruasSelecionadasPac.has(endNorm);
+                const stVisita = avaliarStatusVisita(p);
+                let matchStatus = true;
+                if(filtroAtualStatus === 'URGENTE') matchStatus = (stVisita === 'Urgente');
+                if(filtroAtualStatus === 'ATIVOS') matchStatus = (stVisita === 'Ativo');
+                if(filtroAtualStatus === 'INATIVOS') matchStatus = (stVisita === 'Inativo');
+
+                let matchProg = true;
+                if(filtroAtualPrograma !== 'TODOS') {
+                    if(filtroAtualPrograma === 'COMPLEXOS') matchProg = !!p.complexo;
+                    else if(filtroAtualPrograma === 'TAB') matchProg = !!p.tabagismo;
+                    else {
+                        const progStr = ((p.programa || "") + " " + (p.classificacao || "")).toUpperCase();
+                        const bolsaStr = (p.bolsaFamilia || "").toUpperCase();
+                        if(filtroAtualPrograma === 'BLSA') matchProg = bolsaStr.includes('SIM') || progStr.includes('BOLSA');
+                        else {
+                            const termos = { 'DM': ['DM', 'DIABET'], 'HAS': ['HAS', 'HIPERTENS'], 'GES': ['GES', 'GESTA'], 'CR': ['CR', 'CRIANÇA'], 'ID': ['ID', 'IDOSO'] };
+                            matchProg = (termos[filtroAtualPrograma] || []).some(t => progStr.includes(t));
+                        }
+                    }
+                }
+                return matchBusca && matchRua && matchStatus && matchProg;
+            });
+
+            if(filtrados.length === 0) {
+                listaDiv.innerHTML = `<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-slate-400 text-sm">Nenhum paciente encontrado.</div>`;
+                return;
+            }
+
+            listaDiv.innerHTML = filtrados.map(p => {
+                const st = avaliarStatusVisita(p);
+                let badgeClass = (st === 'Urgente') ? 'bg-red-500/20 text-red-300' : (st === 'Inativo' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300');
+                const progAbrev = formatarProgramaAbreviado(p.programa + " " + p.classificacao);
+                const progU = (p.programa + " " + p.classificacao).toUpperCase();
+                
+                let infoGestanteHtml = '';
+                if(progU.includes('GESTA') || progU.includes('GES')) {
+                    let semVal = p.semanas || 'A informar';
+                    let numS = extrairNumeroSemanas(semVal);
+                    let alertaVacina = (numS >= 14 && numS <= 27) ? `<span class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">⚠️ Vacina 14-27s</span>` : '';
+                    infoGestanteHtml = `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">Semanas: <strong>${semVal}</strong></span> ${alertaVacina}`;
+                }
+
+                return `
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center space-x-2.5">
+                                <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer">
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-400 uppercase">${progAbrev} · ${p.classificacao || ''}</span>
+                                    <h3 class="font-bold text-base text-slate-100">${p.nome}</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${badgeClass}">Visita: ${st}</span>
+                                <button onclick="abrirModalEdicao(${p.id})" class="bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg transition">📖 Prontuário</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                            <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo}</div>
+                            <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero} (${p.bairro || ''})</div>
+                            <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia || 'Não'}</div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-[11px]">
+                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Última Consulta: <strong>${p.ultimaConsulta}</strong></span>
+                            ${p.glicada ? `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Glicada: <strong>${p.glicada}</strong></span>` : ''}
+                            ${infoGestanteHtml}
+                            ${p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo</span>` : ''}
+                            ${p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function construirPainelQuantitativo() {
+            const categorias = [
+                { nome: 'Hipertensão (HAS)', chave: 'HAS' },
+                { nome: 'Diabetes (DM)', chave: 'DM' },
+                { nome: 'Gestantes (GES)', chave: 'GES' },
+                { nome: 'Crianças (CR)', chave: 'CR' },
+                { nome: 'Idosos (ID)', chave: 'ID' },
+                { nome: 'Bolsa Família (BLSA)', chave: 'BLSA' },
+                { nome: 'Tabagismo, Álcool e Outras Dependências', chave: 'TAB' },
+                { nome: 'Casos Complexos', chave: 'COMPLEXOS' }
+            ];
+
+            document.getElementById('tabela-quant-programas').innerHTML = categorias.map(cat => {
+                let filtrados = pacientes.filter(p => {
+                    const progStr = ((p.programa || "") + " " + (p.classificacao || "")).toUpperCase();
+                    const bolsaStr = (p.bolsaFamilia || "").toUpperCase();
+                    if(cat.chave === 'COMPLEXOS') return !!p.complexo;
+                    if(cat.chave === 'TAB') return !!p.tabagismo;
+                    if(cat.chave === 'BLSA') return bolsaStr.includes('SIM') || progStr.includes('BOLSA');
+                    const termos = { 'DM': ['DM', 'DIABET'], 'HAS': ['HAS', 'HIPERTENS'], 'GES': ['GES', 'GESTA'], 'CR': ['CR', 'CRIANÇA'], 'ID': ['ID', 'IDOSO'] };
+                    return (termos[cat.chave] || []).some(t => progStr.includes(t));
+                });
+                return `<tr onclick="filtrarPorPainelPrograma('${cat.chave}')" class="hover:bg-slate-700/80 cursor-pointer transition"><td class="p-2.5 font-semibold text-emerald-300 underline">${cat.nome}</td><td class="p-2.5 text-center font-bold text-emerald-400">${filtrados.length}</td><td class="p-2.5 text-center text-blue-400">${filtrados.filter(p=>avaliarStatusVisita(p)==='Ativo').length}</td><td class="p-2.5 text-center text-red-400">${filtrados.filter(p=>avaliarStatusVisita(p)==='Urgente').length}</td><td class="p-2.5 text-center text-amber-400">${filtrados.filter(p=>avaliarStatusVisita(p)==='Inativo').length}</td></tr>`;
+            }).join('');
+
+            let contagemRuas = {};
+            pacientes.forEach(p => { let r = (p.enderecoOriginal || p.endereco || "NÃO INFORMADA").trim().toUpperCase(); contagemRuas[r] = (contagemRuas[r] || 0) + 1; });
+            document.getElementById('tabela-quant-ruas').innerHTML = Object.keys(contagemRuas).map(r => `<tr onclick="filtrarPorPainelRua('${r}')" class="hover:bg-slate-700/80 cursor-pointer transition"><td class="p-2.5 font-medium text-emerald-300 underline">${r}</td><td class="p-2.5 text-center font-bold text-emerald-400">${obterIniciaisPorNome(r)}</td><td class="p-2.5 text-center font-semibold text-slate-100">${contagemRuas[r]}</td></tr>`).join('');
+        }
+
+        function construirTabelaRelatorioA4() {
+            const container = document.getElementById('corpo-tabela-relatorio');
+            let filtrados = pacientes.filter(p => ruasSelecionadasRel.size === 0 || ruasSelecionadasRel.has((p.enderecoOriginal || p.endereco || "").trim().toUpperCase()));
+            let agrupado = {};
+            filtrados.forEach(p => { let c = `${(p.enderecoOriginal || p.endereco).trim().toUpperCase()}|${p.numero}`; if(!agrupado[c]) agrupado[c] = []; agrupado[c].push(p); });
+            
+            let html = '';
+            for(let chave in agrupado) {
+                const [rua, num] = chave.split('|');
+                html += `<div class="mb-4 break-inside-avoid"><div class="bg-slate-100 font-bold text-xs p-1.5 border border-slate-300">Rua: ${rua} · Nº ${num}</div><table><thead><tr><th>Usuário</th><th>Programa</th><th>Dt Última Consulta</th><th>Bolsa Família</th></tr></thead><tbody>`;
+                agrupado[chave].forEach(p => { html += `<tr><td>${p.nome}</td><td>${p.programa}</td><td>${p.ultimaConsulta}</td><td>${p.bolsaFamilia}</td></tr>`; });
+                html += `</tbody></table></div>`;
+            }
+            container.innerHTML = html || `<p class="text-center text-xs text-slate-500 py-4">Nenhum dado selecionado.</p>`;
+        }
+
+        function gerarRelatorioA4() { window.print(); }
+
+        function importarPlanilha(event) {
+            const arquivo = event.target.files[0];
+            if(!arquivo) return;
+            Papa.parse(arquivo, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const novosDados = results.data;
+                    pacientes = novosDados.map((row, idx) => {
+                        const nomeUsu = row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido';
+                        const ruaOriginal = (row['Endereço'] || row['endereco'] || 'Rua Principal').trim();
+                        const existente = pacientes.find(p => p.nome.toUpperCase() === nomeUsu.toUpperCase());
+
+                        return {
+                            id: existente ? existente.id : (idx + 1),
+                            programa: row['Programa'] || row['programas'] || (existente ? existente.programa : 'Geral'),
+                            classificacao: row['Classificação'] || row['classificacao'] || (existente ? existente.classificacao : ''),
+                            nome: nomeUsu,
+                            dtNascimento: row['Dt Nascimento'] || (existente ? existente.dtNascimento : ''),
+                            idade: row['Idade'] || (existente ? existente.idade : 0),
+                            sexo: row['Sexo'] || (existente ? existente.sexo : 'F'),
+                            enderecoOriginal: ruaOriginal.toUpperCase(),
+                            endereco: formatarEnderecoParaIniciais(ruaOriginal),
+                            numero: row['Nº'] || (existente ? existente.numero : 'S/N'),
+                            bairro: row['Bairro'] || (existente ? existente.bairro : ''),
+                            ultimaConsulta: row['Dt Última Consulta'] || (existente ? existente.ultimaConsulta : new Date().toISOString().split('T')[0]),
+                            situacao: row['Situação'] || (existente ? existente.situacao : 'Ativo'),
+                            glicada: row['Hemoglobina glicosilada'] || (existente ? existente.glicada : ''),
+                            coletaColeta: row['Data de coleta'] || (existente ? existente.coletaColeta : ''),
+                            bolsaFamilia: row['Bolsa família'] || (existente ? existente.bolsaFamilia : 'Não'),
+                            registrado: existente ? existente.registrado : false,
+                            semanas: row['Semanas'] || row['Idade Gestacional'] || (existente ? existente.semanas : ''),
+                            complexo: existente ? existente.complexo : false,
+                            complexoTipos: existente ? existente.complexoTipos : '',
+                            complexoObs: existente ? existente.complexoObs : '',
+                            tabagismo: existente ? existente.tabagismo : false,
+                            tabagismoTipos: existente ? existente.tabagismoTipos : '',
+                            tabagismoObs: existente ? existente.tabagismoObs : '',
+                            historico: existente ? existente.historico : []
+                        };
+                    });
+
+                    localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+                    alert(`Sucesso! ${pacientes.length} registros atualizados.`);
+                    mudarAba('pacientes');
+                    renderizarPacientes();
+                }
+            });
+        }
+
+        function carregarDadosExemplo() { localStorage.removeItem('acs_pacientes_oficial'); location.reload(); }
+        function limparDados() { if(confirm('Apagar tudo?')) { pacientes = []; localStorage.removeItem('acs_pacientes_oficial'); renderizarPacientes(); } }
+
+        construirMenusCheckbox();
+        renderizarPacientes();
+    </script>
+</body>
+</html>
