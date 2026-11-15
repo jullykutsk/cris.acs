@@ -267,7 +267,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-400">Colunas suportadas: Programas, Usuário, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Bolsa Família. Se você já tiver dados preenchidos, eles serão mantidos.</p>
+                <p class="text-xs text-slate-400">Colunas suportadas: <strong>Programa, Classificação, Usuário, Dt Nascimento, Idade, Sexo, Endereço, Nº, Bairro, Dt Última Consulta, Situação, Hemoglobina glicosilada, Data de coleta, Bolsa família</strong>. As anotações anteriores serão preservadas.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
                     <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -396,8 +396,8 @@
                             <input type="text" id="edit-glicada" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1">Uso de Insulina?</label>
-                            <input type="text" id="edit-insulina" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                            <label class="block text-slate-400 mb-1">Data Coleta Glicada</label>
+                            <input type="text" id="edit-datacoleta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                         </div>
                     </div>
                 </div>
@@ -438,24 +438,6 @@
                             <input type="text" id="edit-risco" placeholder="Ex: Habitual / Alto" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-slate-400">Trabalha?</label>
-                            <input type="text" id="edit-trabalha" placeholder="Ex: Sim / Não" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400">Vacinas (Gestante)</label>
-                            <input type="text" id="edit-vacinas-ges" placeholder="Ex: DTPA em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-slate-400">Suplementos</label>
-                        <input type="text" id="edit-suplementos" placeholder="Ex: Ferro, Ácido Fólico" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400">Rede de Apoio</label>
-                        <input type="text" id="edit-rede-apoio" placeholder="Ex: Possui apoio familiar" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                    </div>
                 </div>
 
                 <!-- BLOCO CRIANÇA (CR) -->
@@ -470,14 +452,6 @@
                     <span class="font-bold text-emerald-400 block">🔹 Idoso (ID)</span>
                     <label class="block text-slate-400">Vacinas (Idoso)</label>
                     <input type="text" id="edit-vacinas-id" placeholder="Ex: Influenza em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mb-2">
-                    
-                    <label class="block text-slate-400 font-semibold">Avaliação de Ambiente:</label>
-                    <div class="grid grid-cols-1 gap-1.5 pt-1 text-slate-300">
-                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-1" class="accent-emerald-500"> <span>Risco de Quedas / Sem tapete antiderrapante</span></label>
-                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-2" class="accent-emerald-500"> <span>Boa iluminação nos cômodos</span></label>
-                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-3" class="accent-emerald-500"> <span>Presença de barras de apoio no banheiro</span></label>
-                        <label class="flex items-center space-x-2"><input type="checkbox" id="amb-4" class="accent-emerald-500"> <span>Ambiente limpo e arejado</span></label>
-                    </div>
                 </div>
             </div>
 
@@ -499,7 +473,7 @@
                 <span class="text-xl">📊</span>
                 <span class="text-[11px] font-medium">Painel</span>
             </button>
-            <button onclick="mudarAaba('relatorios')" id="btn-aba-relatorios" class="flex flex-col items-center text-slate-400 space-y-1 hover:text-slate-200">
+            <button onclick="mudarAba('relatorios')" id="btn-aba-relatorios" class="flex flex-col items-center text-slate-400 space-y-1 hover:text-slate-200">
                 <span class="text-xl">📝</span>
                 <span class="text-[11px] font-medium">Relatórios</span>
             </button>
@@ -543,7 +517,6 @@
         let ruasSelecionadasPac = new Set();
         let ruasSelecionadasRel = new Set();
 
-        // Salva e aplica preferência de tema
         function alternarTemaSol() {
             document.body.classList.toggle('light-theme');
             const ehClaro = document.body.classList.contains('light-theme');
@@ -594,18 +567,6 @@
             return match ? parseInt(match[0]) : 0;
         }
 
-        function calcularSemanasGestante(dataStr) {
-            if(!dataStr || dataStr === '-') return '24 semanas';
-            const iso = formatarDataParaISO(dataStr);
-            const dataConsulta = new Date(iso);
-            const hoje = new Date();
-            const diffTime = hoje - dataConsulta;
-            const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-            let semanasBase = 12 + diffWeeks; 
-            if(semanasBase > 40) semanasBase = 40;
-            return `${semanasBase} semanas`;
-        }
-
         function calcularMeses(dataStr) {
             if(!dataStr || dataStr === '-') return 0;
             const iso = formatarDataParaISO(dataStr);
@@ -635,10 +596,8 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", nome: "Maria G. S.", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", ultimaConsulta: "2026-01-10", periodo: "Manhã", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", complexo: true, complexoTipos: "Acamado | Deficiência Visual", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Carlos S.", cuidador: "Maria S.", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}], glicada: "7.2%", insulina: "Sim", ecg: "OK", mapa: "Pendente", semanas: "", risco: "", trabalha: "", vacinas: "", suplementos: "", redeApoio: "", ambiente: "" },
-                { id: 2, programa: "Gestantes", nome: "Ana C. O.", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", ultimaConsulta: "2025-10-15", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", complexo: false, complexoTipos: "", tabagismo: true, tabagismoTipos: "Tabagismo", tabagismoObs: "Fumante moderada", responsavel: "", cuidador: "", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "20 semanas", risco: "Alto Risco", trabalha: "Sim", vacinas: "Pendente DTPA", suplementos: "Ferro / Ác. Fólico", redeApoio: "Possui apoio", ambiente: "" },
-                { id: 3, programa: "Idosos", nome: "João F. S.", idade: 81, sexo: "M", enderecoOriginal: "RUA PAULO ESTEPHANO CAVICHIOLO", endereco: "PEC", numero: "45", ultimaConsulta: "2025-05-05", periodo: "Manhã", bolsaFamilia: "Não", registrado: true, complemento: "", complexo: false, complexoTipos: "", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Ana F. S.", cuidador: "Filha (Juliana)", historico: [{data: "05/05/2025", periodo: "Manhã", motivo: "Renovação de receita", contato: "Receita entregue à filha"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Influenza ok", suplementos: "", redeApoio: "", ambiente: "Risco de queda | Boa iluminação" },
-                { id: 4, programa: "Crianças", nome: "Pedro H. S.", idade: 2, sexo: "M", enderecoOriginal: "RUA ANTONIO MATHEUS", endereco: "AM", numero: "122", ultimaConsulta: "2025-12-12", periodo: "Tarde", bolsaFamilia: "Sim", registrado: false, complemento: "", complexo: true, complexoTipos: "TEA (Autismo)", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", responsavel: "Mariana H.", cuidador: "Mãe", historico: [{data: "12/12/2025", periodo: "Tarde", motivo: "Busca ativa vacinação", contato: "Cartão verificado"}], glicada: "", insulina: "", ecg: "", mapa: "", semanas: "", risco: "", trabalha: "", vacinas: "Pentavalente pendente", suplementos: "Vitamina A", redeApoio: "Mãe presente", ambiente: "" }
+                { id: 1, programa: "Hipertensos / Diabéticos", classificacao: "Ativo", nome: "Maria G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "Ativo", hemoglobinaGlicosilada: "7.2%", dataColeta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", complexo: true, complexoTipos: "Acamado | Deficiência Visual", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}] },
+                { id: 2, programa: "Gestantes", classificacao: "Alto Risco", nome: "Ana C. O.", dtNascimento: "10/12/1997", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", bairro: "Centro", ultimaConsulta: "2025-10-15", situacao: "Ativo", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", complexo: false, complexoTipos: "", tabagismo: true, tabagismoTipos: "Tabagismo", tabagismoObs: "Fumante moderada", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}] }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -824,16 +783,7 @@
             }
         }
 
-        function checarAvisoVacinaModal() {
-            const val = document.getElementById('edit-semanas').value;
-            const num = extrairNumeroSemanas(val);
-            const aviso = document.getElementById('aviso-vacina-gestante');
-            if(num >= 14 && num <= 27) {
-                aviso.classList.remove('hidden');
-            } else {
-                aviso.classList.add('hidden');
-            }
-        }
+        function checarAvisoVacinaModal() {}
 
         function toggleBlocoComplexo() {
             const marcado = document.getElementById('edit-complexo').checked;
@@ -873,30 +823,8 @@
 
             document.getElementById('edit-motivo-busca').value = '';
             document.getElementById('edit-visita-contato').value = '';
-            document.getElementById('edit-responsavel').value = p.responsavel || '';
-            document.getElementById('edit-cuidador').value = p.cuidador || '';
-            document.getElementById('edit-glicada').value = p.glicada || '';
-            document.getElementById('edit-insulina').value = p.insulina || '';
-            document.getElementById('edit-ecg').value = p.ecg || '';
-            document.getElementById('edit-mapa').value = p.mapa || '';
-            
-            const progU = (p.programa || "").toUpperCase();
-
-            if(progU.includes('GESTA') || progU.includes('GES')) {
-                document.getElementById('edit-semanas').value = p.semanas || calcularSemanasGestante(p.ultimaConsulta);
-            } else {
-                document.getElementById('edit-semanas').value = p.semanas || '';
-            }
-
-            document.getElementById('edit-risco').value = p.risco || '';
-            document.getElementById('edit-trabalha').value = p.trabalha || '';
-            document.getElementById('edit-vacinas-ges').value = p.vacinas || '';
-            document.getElementById('edit-vacinas-cr').value = p.vacinas || '';
-            document.getElementById('edit-vacinas-id').value = p.vacinas || '';
-            document.getElementById('edit-suplementos').value = p.suplementos || '';
-            document.getElementById('edit-rede-apoio').value = p.redeApoio || '';
-
-            checarAvisoVacinaModal();
+            document.getElementById('edit-glicada').value = p.hemoglobinaGlicosilada || '';
+            document.getElementById('edit-datacoleta').value = p.dataColeta || '';
 
             const histDiv = document.getElementById('historico-prontuario');
             if(!p.historico || p.historico.length === 0) {
@@ -916,15 +844,7 @@
                 `).join('');
             }
 
-            const ehIdosoOuCrianca = progU.includes('IDOSO') || progU.includes('ID') || progU.includes('CRIANÇA') || progU.includes('CR');
-            document.getElementById('bloco-resp-cuidador').classList.toggle('hidden', !ehIdosoOuCrianca);
-
-            const ambStr = p.ambiente || '';
-            document.getElementById('amb-1').checked = ambStr.includes('Queda') || ambStr.includes('tapete');
-            document.getElementById('amb-2').checked = ambStr.includes('iluminação');
-            document.getElementById('amb-3').checked = ambStr.includes('banheiro') || ambStr.includes('barras');
-            document.getElementById('amb-4').checked = ambStr.includes('limpo') || ambStr.includes('arejado');
-
+            const progU = (p.programa || "").toUpperCase();
             document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET') && !progU.includes('DM'));
             document.getElementById('bloco-has').classList.toggle('hidden', !progU.includes('HIPERTENS') && !progU.includes('HAS'));
             document.getElementById('bloco-ges').classList.toggle('hidden', !progU.includes('GESTA') && !progU.includes('GES'));
@@ -1005,40 +925,9 @@
             }
 
             const progU = (p.programa || "").toUpperCase();
-            const ehIdosoOuCrianca = progU.includes('IDOSO') || progU.includes('ID') || progU.includes('CRIANÇA') || progU.includes('CR');
-
-            if(ehIdosoOuCrianca) {
-                p.responsavel = document.getElementById('edit-responsavel').value || '-';
-                p.cuidador = document.getElementById('edit-cuidador').value || '-';
-            }
-
             if (progU.includes('DIABET') || progU.includes('DM')) {
-                p.glicada = document.getElementById('edit-glicada').value;
-                p.insulina = document.getElementById('edit-insulina').value;
-            }
-            if (progU.includes('HIPERTENS') || progU.includes('HAS')) {
-                p.ecg = document.getElementById('edit-ecg').value;
-                p.mapa = document.getElementById('edit-mapa').value;
-            }
-            if (progU.includes('GESTA') || progU.includes('GES')) {
-                p.semanas = document.getElementById('edit-semanas').value;
-                p.risco = document.getElementById('edit-risco').value;
-                p.trabalha = document.getElementById('edit-trabalha').value;
-                p.vacinas = document.getElementById('edit-vacinas-ges').value;
-                p.suplementos = document.getElementById('edit-suplementos').value;
-                p.redeApoio = document.getElementById('edit-rede-apoio').value;
-            }
-            if (progU.includes('CRIANÇA') || progU.includes('CR')) {
-                p.vacinas = document.getElementById('edit-vacinas-cr').value;
-            }
-            if (progU.includes('IDOSO') || progU.includes('ID')) {
-                p.vacinas = document.getElementById('edit-vacinas-id').value;
-                let ambientesMarcados = [];
-                if(document.getElementById('amb-1').checked) ambientesMarcados.push("Risco de quedas");
-                if(document.getElementById('amb-2').checked) ambientesMarcados.push("Boa iluminação");
-                if(document.getElementById('amb-3').checked) ambientesMarcados.push("Barras no banheiro");
-                if(document.getElementById('amb-4').checked) ambientesMarcados.push("Ambiente limpo/arejado");
-                p.ambiente = ambientesMarcados.length > 0 ? ambientesMarcados.join(" | ") : "OK";
+                p.hemoglobinaGlicosilada = document.getElementById('edit-glicada').value;
+                p.dataColeta = document.getElementById('edit-datacoleta').value;
             }
 
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
@@ -1111,38 +1000,13 @@
                 let detalhesEspecificosHtml = '';
                 
                 if (progU.includes('DIABET') || progU.includes('DM')) {
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Glicada: <strong>${p.glicada || 'Pendente'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Insulina: <strong>${p.insulina || 'Não'}</strong></span>`;
-                }
-                if (progU.includes('HIPERTENS') || progU.includes('HAS')) {
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">ECG: <strong>${p.ecg || '-'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">MAPA: <strong>${p.mapa || '-'}</strong></span>`;
-                }
-                if (progU.includes('GESTA') || progU.includes('GES')) {
-                    let semAtual = p.semanas || calcularSemanasGestante(p.ultimaConsulta);
-                    let numSem = extrairNumeroSemanas(semAtual);
-                    let alertaVacinaBadge = (numSem >= 14 && numSem <= 27) ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold">⚠️ Vacina Ideal (14-27s)</span>` : '';
-
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Semanas: <strong>${semAtual}</strong></span>`;
-                    detalhesEspecificosHtml += alertaVacinaBadge;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Risco: <strong>${p.risco || '-'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Trabalha: <strong>${p.trabalha || '-'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas: <strong>${p.vacinas || '-'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Suplementos: <strong>${p.suplementos || '-'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Rede de Apoio: <strong>${p.redeApoio || '-'}</strong></span>`;
-                }
-                if (progU.includes('CRIANÇA') || progU.includes('CR')) {
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas Faltantes: <strong>${p.vacinas || 'Em dia'}</strong></span>`;
-                }
-                if (progU.includes('IDOSO') || progU.includes('ID')) {
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Vacinas: <strong>${p.vacinas || 'Em dia'}</strong></span>`;
-                    detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Ambiente: <strong>${p.ambiente || 'OK'}</strong></span>`;
+                    if(p.hemoglobinaGlicosilada) detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">HbA1c: <strong>${p.hemoglobinaGlicosilada}</strong></span>`;
+                    if(p.dataColeta) detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Coleta: <strong>${p.dataColeta}</strong></span>`;
                 }
 
                 let complementoHtml = p.complemento ? `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">Obs/Compl: <strong>${p.complemento}</strong></span>` : '';
-                let complexoBadge = p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo: ${p.complexoTipos || 'Sim'} ${p.complexoObs ? '('+p.complexoObs+')':''}</span>` : '';
-                let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'} ${p.tabagismoObs ? '('+p.tabagismoObs+')':''}</span>` : '';
-                let respCuidadorInfo = (progU.includes('IDOSO') || progU.includes('ID') || progU.includes('CRIANÇA') || progU.includes('CR')) ? `Resp. / Cuidador: ${p.responsavel || '-'} / ${p.cuidador || '-'}` : `Programa Principal`;
+                let complexoBadge = p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo: ${p.complexoTipos || 'Sim'}</span>` : '';
+                let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'}</span>` : '';
 
                 return `
                     <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative">
@@ -1150,7 +1014,7 @@
                             <div class="flex items-center space-x-2.5">
                                 <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer" title="Marcar como registrado no sistema">
                                 <div>
-                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${programaAbreviado}</span>
+                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${programaAbreviado} ${p.classfilcacao ? '· ' + p.classificacao : ''}</span>
                                     <h3 class="font-bold text-base text-slate-100">${p.nome}</h3>
                                 </div>
                             </div>
@@ -1160,9 +1024,9 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
-                            <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo}</div>
-                            <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero}</div>
-                            <div><span class="text-slate-500 block">Info:</span> ${respCuidadorInfo}</div>
+                            <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo} ${p.dtNascimento ? '('+p.dtNascimento+')' : ''}</div>
+                            <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero} - ${p.bairro || ''}</div>
+                            <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia || 'Não'}</div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
                             <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
@@ -1286,11 +1150,9 @@
                 `;
                 agrupado[chave].forEach(p => {
                     let ultimoH = (p.historico && p.historico.length > 0) ? p.historico[0] : {data: '-', periodo: 'Manhã', motivo: '-', contato: '-'};
-                    let progU = (p.programa || "").toUpperCase();
-                    let semRel = progU.includes('GESTA') ? `Sem: ${p.semanas || calcularSemanasGestante(p.ultimaConsulta)} | Trabalha: ${p.trabalha || '-'}` : '';
-                    let infoExtra = `Glicada: ${p.glicada || '-'} | Insulina: ${p.insulina || '-'} ${semRel} | Risco: ${p.risco} | Sup: ${p.suplementos} | Vac/Amb: ${p.vacinas || p.ambiente}`;
-                    if(p.complexo) infoExtra += ` | 🧠 Complexo: ${p.complexoTipos} ${p.complexoObs ? '('+p.complexoObs+')':''}`;
-                    if(p.tabagismo) infoExtra += ` | 🚬 Tab/Álc: ${p.tabagismoTipos} ${p.tabagismoObs ? '('+p.tabagismoObs+')':''}`;
+                    let infoExtra = `HbA1c: ${p.hemoglobinaGlicosilada || '-'} (Coleta: ${p.dataColeta || '-'})`;
+                    if(p.complexo) infoExtra += ` | 🧠 Complexo: ${p.complexoTipos}`;
+                    if(p.tabagismo) infoExtra += ` | 🚬 Tab/Álc: ${p.tabagismoTipos}`;
                     const progAbrev = formatarProgramaAbreviado(p.programa);
                     const perAbrev = ultimoH.periodo ? ` (${ultimoH.periodo})` : '';
                     html += `
@@ -1332,39 +1194,63 @@
                         const ruaOriginal = (row['Endereço'] || row['endereco'] || 'Rua Principal').trim();
                         const chaveUnica = `${nomeNovo.toUpperCase()}|${ruaOriginal.toUpperCase()}`;
 
+                        const progVal = row['Programa'] || row['programas'] || row['Programa'] || 'Geral';
+                        const classVal = row['Classificação'] || row['classificacao'] || '';
+                        const dtNascVal = row['Dt Nascimento'] || row['dtNascimento'] || '';
+                        const idadeVal = row['Idade'] || row['idade'] || 0;
+                        const sexoVal = row['Sexo'] || row['sexo'] || 'F';
+                        const numVal = row['Nº'] || row['nº'] || row['numero'] || 'S/N';
+                        const bairroVal = row['Bairro'] || row['bairro'] || '';
+                        const dtConsVal = row['Dt Última Consulta'] || row['dtÚltimaConsulta'] || row['dtUltimaConsulta'] || new Date().toISOString().split('T')[0];
+                        const situacaoVal = row['Situação'] || row['situacao'] || 'Ativo';
+                        const hba1cVal = row['Hemoglobina glicosilada'] || row['hemoglobinaGlicosilada'] || '';
+                        const coletaVal = row['Data de coleta'] || row['dataDeColeta'] || '';
+                        const bolsaVal = row['Bolsa família'] || row['bolsaFamília'] || row['bolsaFamilia'] || 'Não';
+
                         if (mapaExistente[chaveUnica]) {
                             let pAntigo = mapaExistente[chaveUnica];
                             return {
                                 ...pAntigo,
                                 id: idx + 1,
-                                programa: row['Programas'] || row['programa'] || pAntigo.programa,
-                                idade: row['Idade'] || row['idade'] || pAntigo.idade,
-                                sexo: row['Sexo'] || row['sexo'] || pAntigo.sexo,
+                                programa: progVal,
+                                classificacao: classVal,
+                                dtNascimento: dtNascVal,
+                                idade: idadeVal,
+                                sexo: sexoVal,
                                 enderecoOriginal: ruaOriginal.toUpperCase(),
                                 endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                                numero: row['Nº'] || row['numero'] || pAntigo.numero,
-                                ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || pAntigo.ultimaConsulta,
-                                bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || pAntigo.bolsaFamilia
+                                numero: numVal,
+                                bairro: bairroVal,
+                                ultimaConsulta: dtConsVal,
+                                situacao: situacaoVal,
+                                hemoglobinaGlicosilada: hba1cVal || pAntigo.hemoglobinaGlicosilada,
+                                dataColeta: coletaVal || pAntigo.dataColeta,
+                                bolsaFamilia: bolsaVal
                             };
                         } else {
                             return {
                                 id: idx + 1,
-                                programa: row['Programas'] || row['programa'] || 'Geral',
+                                programa: progVal,
+                                classificacao: classVal,
                                 nome: nomeNovo,
-                                idade: row['Idade'] || row['idade'] || 0,
-                                sexo: row['Sexo'] || row['sexo'] || 'F',
+                                dtNascimento: dtNascVal,
+                                idade: idadeVal,
+                                sexo: sexoVal,
                                 enderecoOriginal: ruaOriginal.toUpperCase(),
                                 endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                                numero: row['Nº'] || row['numero'] || 'S/N',
-                                ultimaConsulta: row['Dt Última Consulta'] || row['ultimaConsulta'] || new Date().toISOString().split('T')[0],
+                                numero: numVal,
+                                bairro: bairroVal,
+                                ultimaConsulta: dtConsVal,
+                                situacao: situacaoVal,
+                                hemoglobinaGlicosilada: hba1cVal,
+                                dataColeta: coletaVal,
+                                bolsaFamilia: bolsaVal,
                                 periodo: 'Manhã',
-                                bolsaFamilia: row['Bolsa família'] || row['bolsaFamilia'] || 'Não',
                                 registrado: false,
                                 complemento: '',
                                 complexo: false, complexoTipos: '', complexoObs: '',
                                 tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
-                                historico: [],
-                                responsavel: '', cuidador: '', glicada: '', insulina: '', ecg: '', mapa: '', semanas: '', risco: '', trabalha: '', vacinas: '', suplementos: '', redeApoio: '', ambiente: ''
+                                historico: []
                             };
                         }
                     });
