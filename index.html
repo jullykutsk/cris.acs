@@ -6,6 +6,8 @@
     <title>Gestão ACS - Microárea</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- SheetJS para ler arquivos XLSX (.xlsx) nativamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -70,7 +72,6 @@
         body.light-theme .text-white, body.light-theme .text-slate-100, body.light-theme .text-slate-200 { color: #0f172a !important; }
         body.light-theme .text-slate-300, body.light-theme .text-slate-400, body.light-theme .text-slate-500 { color: #334155 !important; }
         
-        /* Mantém texto branco em botões sólidos escuros/coloridos */
         body.light-theme .bg-emerald-600, 
         body.light-theme .bg-slate-700.btn-prontuario { color: #ffffff !important; }
         body.light-theme .bg-slate-700.btn-prontuario { background-color: #1e293b !important; }
@@ -105,7 +106,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- CABEÇALHO SEM O ÍCONE LATERAL -->
+    <!-- CABEÇALHO -->
     <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-30 flex justify-between items-center shadow-md no-print">
         <div>
             <h1 class="font-bold text-lg leading-tight text-white">Gestão ACS</h1>
@@ -310,14 +311,14 @@
         <!-- ABA CONFIGURAÇÕES -->
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
-                <h2 class="font-bold text-lg text-white">Importar Planilha Oficial</h2>
-                <p class="text-xs text-slate-300">Colunas suportadas: <strong>Programa, Classificação, Usuário, Dt Nascimento, Idade, Sexo, Endereço, Nº, Bairro, Dt Última Consulta, Situação, Hemoglobina glicosilada, Data de coleta, Bolsa família</strong>. As anotações anteriores serão preservadas.</p>
+                <h2 class="font-bold text-lg text-white">Importar Planilha Oficial (.xlsx ou .csv)</h2>
+                <p class="text-xs text-slate-300">Reconhece o layout padrão de Curitiba: <strong>Unidade de Saúde, Micro Área, Programa, Classificação, Usuário, Dt Nascimento, Idade, Sexo, Endereço, Nº, Dt Última Consulta, Situação, Hemoglobina glicosilada, Data de coleta, Bolsa família</strong>. As anotações anteriores são preservadas.</p>
                 
                 <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer relative">
-                    <input type="file" id="input-arquivo-csv" accept=".csv, .xlsx" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <input type="file" id="input-arquivo-excel" accept=".xlsx, .xls, .csv" onchange="importarPlanilha(event)" class="absolute inset-0 opacity-0 cursor-pointer">
                     <div class="space-y-2">
                         <span class="text-3xl">📁</span>
-                        <p class="text-sm font-medium text-white">Clique aqui ou arraste o arquivo CSV/Excel</p>
+                        <p class="text-sm font-medium text-white">Clique aqui ou arraste a planilha oficial (.xlsx)</p>
                     </div>
                 </div>
 
@@ -504,17 +505,27 @@
 
         function formatarDataParaISO(dataStr) {
             if(!dataStr || dataStr === '-') return new Date().toISOString().split('T')[0];
-            if(dataStr.includes('-')) return dataStr;
-            const partes = dataStr.split('/');
-            if(partes.length === 3) return `${partes[2]}-${partes[1]}-${partes[0]}`;
+            if(typeof dataStr === 'string' && dataStr.includes('-')) return dataStr.split('T')[0];
+            if(dataStr instanceof Date) return dataStr.toISOString().split('T')[0];
+            if(typeof dataStr === 'string' && dataStr.includes('/')) {
+                const partes = dataStr.split('/');
+                if(partes.length === 3) return `${partes[2]}-${partes[1]}-${partes[0]}`;
+            }
             return new Date().toISOString().split('T')[0];
         }
 
         function formatarDataParaBR(dataIso) {
             if(!dataIso) return '-';
-            const partes = dataIso.split('-');
+            if(dataIso instanceof Date) {
+                const d = String(dataIso.getDate()).padStart(2, '0');
+                const m = String(dataIso.getMonth() + 1).padStart(2, '0');
+                const y = dataIso.getFullYear();
+                return `${d}/${m}/${y}`;
+            }
+            let str = String(dataIso).split('T')[0];
+            const partes = str.split('-');
             if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
-            return dataIso;
+            return str;
         }
 
         function formatarProgramaAbreviado(texto) {
@@ -552,7 +563,7 @@
 
         function formatarEnderecoParaIniciais(nomeRua) {
             if(!nomeRua) return 'RUA PRINCIPAL';
-            const limpo = nomeRua.trim().toUpperCase();
+            const limpo = String(nomeRua).trim().toUpperCase();
             for(let b in BLOCOS_RUAS) {
                 const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === limpo || limpo.includes(r.nome.toUpperCase()));
                 if(achado) return achado.iniciais;
@@ -562,8 +573,7 @@
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "Hipertensos / Diabéticos", classificacao: "Ativo", nome: "Maria G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "Ativo", hemoglobinaGlicosilada: "7.2%", dataColeta: "10/01/2026", bolsaFamilia: "Sim", registrado: false, complemento: "Deficiente visual", complexo: true, complexoTipos: "Acamado | Deficiência Visual", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}] },
-                { id: 2, programa: "Gestantes", classificacao: "Alto Risco", nome: "Ana C. O.", dtNascimento: "10/12/1997", idade: 28, sexo: "F", enderecoOriginal: "RUA ANGELO GAI", endereco: "AG", numero: "12", bairro: "Centro", ultimaConsulta: "2025-10-15", situacao: "Ativo", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "Sim", registrado: false, complemento: "Vulnerabilidade social", complexo: false, complexoTipos: "", tabagismo: true, tabagismoTipos: "Tabagismo", tabagismoObs: "Fumante moderada", historico: [{data: "15/10/2025", periodo: "Tarde", motivo: "Pré-natal em atraso", contato: "Comparecer na próxima terça"}] }
+                { id: 1, programa: "SAUDE DA FAMILIA", classificacao: "ATIGO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "7.2%", dataColeta: "10/01/2026", bolsaFamilia: "SIM", registrado: false, complemento: "Deficiente visual", complexo: true, complexoTipos: "Acamado | Deficiência Visual", tabagismo: false, tabagismoTipos: "", tabagismoObs: "", historico: [{data: "10/01/2026", periodo: "Manhã", motivo: "Falta de exames", contato: "Orientado a buscar UBS"}] }
             ];
             localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
         }
@@ -713,7 +723,7 @@
 
         function obterIniciaisPorNome(nomeRua) {
             for(let b in BLOCOS_RUAS) {
-                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === nomeRua.toUpperCase());
+                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === String(nomeRua).toUpperCase());
                 if(achado) return achado.iniciais;
             }
             return nomeRua || 'RUA';
@@ -1151,93 +1161,143 @@
             const arquivo = event.target.files[0];
             if(!arquivo) return;
 
-            Papa.parse(arquivo, {
+            const reader = new FileReader();
+            
+            if(arquivo.name.endsWith('.csv')) {
+                reader.onload = function(e) {
+                    processarDadosPlanilhaTexto(e.target.result, true);
+                };
+                reader.readAsText(arquivo, 'UTF-8');
+            } else {
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    
+                    // Achar onde está o cabeçalho real (procurar pela linha que contenha 'Usuário')
+                    let headerIndex = 6; // Padrão conforme arquivo de Curitiba
+                    for(let i=0; i<Math.min(json.length, 12); i++) {
+                        let rowStr = JSON.stringify(json[i]).toUpperCase();
+                        if(rowStr.includes('USUÁRIO') || rowStr.includes('USUARIO')) {
+                            headerIndex = i;
+                            break;
+                        }
+                    }
+
+                    const headers = json[headerIndex];
+                    let rows = [];
+                    for(let i = headerIndex + 1; i < json.length; i++) {
+                        let r = json[i];
+                        if(!r || r.length === 0) continue;
+                        let obj = {};
+                        for(let j = 0; j < headers.length; j++) {
+                            if(headers[j]) {
+                                obj[headers[j].toString().trim()] = r[j] !== undefined ? r[j] : '';
+                            }
+                        }
+                        rows.push(obj);
+                    }
+
+                    processarListaPacientes(rows);
+                };
+                reader.readAsArrayBuffer(arquivo);
+            }
+        }
+
+        function processarDadosPlanilhaTexto(textoCsv) {
+            Papa.parse(textoCsv, {
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    const dadosNovos = results.data;
-                    let mapaExistente = {};
-                    pacientes.forEach(p => {
-                        let nomeP = (p.nome || "").trim().toUpperCase();
-                        let endP = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
-                        let chaveUnica = `${nomeP}|${endP}`;
-                        mapaExistente[chaveUnica] = p;
-                    });
-
-                    pacientes = dadosNovos.map((row, idx) => {
-                        const nomeNovo = (row['Usuário'] || row['usuario'] || row['Nome'] || row['nome'] || '').trim();
-                        if(!nomeNovo) return null;
-
-                        const ruaOriginal = (row['Endereço'] || row['endereco'] || 'Rua Principal').trim();
-                        const chaveUnica = `${nomeNovo.toUpperCase()}|${ruaOriginal.toUpperCase()}`;
-
-                        const progVal = row['Programa'] || row['programas'] || 'Geral';
-                        const classVal = row['Classificação'] || row['classificacao'] || '';
-                        const dtNascVal = row['Dt Nascimento'] || row['dtNascimento'] || '';
-                        const idadeVal = row['Idade'] || row['idade'] || 0;
-                        const sexoVal = row['Sexo'] || row['sexo'] || 'F';
-                        const numVal = row['Nº'] || row['nº'] || row['numero'] || 'S/N';
-                        const bairroVal = row['Bairro'] || row['bairro'] || '';
-                        const dtConsVal = row['Dt Última Consulta'] || row['dtÚltimaConsulta'] || row['dtUltimaConsulta'] || new Date().toISOString().split('T')[0];
-                        const situacaoVal = row['Situação'] || row['situacao'] || 'Ativo';
-                        const hba1cVal = row['Hemoglobina glicosilada'] || row['hemoglobinaGlicosilada'] || '';
-                        const coletaVal = row['Data de coleta'] || row['dataDeColeta'] || '';
-                        const bolsaVal = row['Bolsa família'] || row['bolsaFamília'] || row['bolsaFamilia'] || 'Não';
-
-                        if (mapaExistente[chaveUnica]) {
-                            let pAntigo = mapaExistente[chaveUnica];
-                            return {
-                                ...pAntigo,
-                                id: idx + 1,
-                                programa: progVal || pAntigo.programa,
-                                classificacao: classVal || pAntigo.classificacao,
-                                dtNascimento: dtNascVal || pAntigo.dtNascimento,
-                                idade: idadeVal || pAntigo.idade,
-                                sexo: sexoVal || pAntigo.sexo,
-                                enderecoOriginal: ruaOriginal.toUpperCase(),
-                                endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                                numero: numVal || pAntigo.numero,
-                                bairro: bairroVal || pAntigo.bairro,
-                                ultimaConsulta: dtConsVal || pAntigo.ultimaConsulta,
-                                situacao: situacaoVal || pAntigo.situacao,
-                                hemoglobinaGlicosilada: hba1cVal || pAntigo.hemoglobinaGlicosilada,
-                                dataColeta: coletaVal || pAntigo.dataColeta,
-                                bolsaFamilia: bolsaVal || pAntigo.bolsaFamilia
-                            };
-                        } else {
-                            return {
-                                id: idx + 1,
-                                programa: progVal,
-                                classificacao: classVal,
-                                nome: nomeNovo,
-                                dtNascimento: dtNascVal,
-                                idade: idadeVal,
-                                sexo: sexoVal,
-                                enderecoOriginal: ruaOriginal.toUpperCase(),
-                                endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                                numero: numVal,
-                                bairro: bairroVal,
-                                ultimaConsulta: dtConsVal,
-                                situacao: situacaoVal,
-                                hemoglobinaGlicosilada: hba1cVal,
-                                dataColeta: coletaVal,
-                                bolsaFamilia: bolsaVal,
-                                periodo: 'Manhã',
-                                registrado: false,
-                                complemento: '',
-                                complexo: false, complexoTipos: '', complexoObs: '',
-                                tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
-                                historico: []
-                            };
-                        }
-                    }).filter(Boolean);
-
-                    localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
-                    alert(`Sucesso! ${pacientes.length} registros atualizados mantendo as anotações anteriores.`);
-                    mudarAba('pacientes');
-                    renderizarPacientes();
+                    processarListaPacientes(results.data);
                 }
             });
+        }
+
+        function processarListaPacientes(dadosNovos) {
+            let mapaExistente = {};
+            pacientes.forEach(p => {
+                let nomeP = (p.nome || "").trim().toUpperCase();
+                let endP = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
+                let chaveUnica = `${nomeP}|${endP}`;
+                mapaExistente[chaveUnica] = p;
+            });
+
+            pacientes = dadosNovos.map((row, idx) => {
+                // Tenta mapear colunas com variações de acentuação do sistema de Curitiba
+                const nomeNovo = (row['Usuário'] || row['USUÁRIO'] || row['usuario'] || row['Nome'] || row['nome'] || '').trim();
+                if(!nomeNovo) return null;
+
+                const ruaOriginal = (row['Endereço'] || row['ENDEREÇO'] || row['endereco'] || 'Rua Principal').trim();
+                const chaveUnica = `${nomeNovo.toUpperCase()}|${ruaOriginal.toUpperCase()}`;
+
+                const progVal = row['Programa'] || row['PROGRAMA'] || row['programas'] || 'Geral';
+                const classVal = row['Classificação'] || row['CLASSIFICAÇÃO'] || row['classificacao'] || '';
+                const dtNascVal = row['Dt Nascimento'] || row['DT NASCIMENTO'] || row['dtNascimento'] || '';
+                const idadeVal = row['Idade'] || row['IDADE'] || row['idade'] || 0;
+                const sexoVal = row['Sexo'] || row['SEXO'] || row['sexo'] || 'F';
+                const numVal = row['Nº'] || row['N°'] || row['Nº'] || row['numero'] || 'S/N';
+                const bairroVal = row['Bairro'] || row['BAIRRO'] || row['bairro'] || '';
+                const dtConsVal = row['Dt Última Consulta'] || row['DT ÚLTIMA CONSULTA'] || row['dtUltimaConsulta'] || new Date().toISOString().split('T')[0];
+                const situacaoVal = row['Situação'] || row['SITUAÇÃO'] || row['situacao'] || 'Ativo';
+                const hba1cVal = row['Hemoglobina glicosilada'] || row['HEMOGLOBINA GLICOSILADA'] || '';
+                const coletaVal = row['Data de coleta'] || row['DATA DE COLETA'] || '';
+                const bolsaVal = row['Bolsa família'] || row['BOLSA FAMÍLIA'] || row['bolsaFamilia'] || 'Não';
+
+                if (mapaExistente[chaveUnica]) {
+                    let pAntigo = mapaExistente[chaveUnica];
+                    return {
+                        ...pAntigo,
+                        id: idx + 1,
+                        programa: progVal || pAntigo.programa,
+                        classificacao: classVal || pAntigo.classificacao,
+                        dtNascimento: dtNascVal || pAntigo.dtNascimento,
+                        idade: idadeVal || pAntigo.idade,
+                        sexo: sexoVal || pAntigo.sexo,
+                        enderecoOriginal: ruaOriginal.toUpperCase(),
+                        endereco: formatarEnderecoParaIniciais(ruaOriginal),
+                        numero: numVal || pAntigo.numero,
+                        bairro: bairroVal || pAntigo.bairro,
+                        ultimaConsulta: dtConsVal || pAntigo.ultimaConsulta,
+                        situacao: situacaoVal || pAntigo.situacao,
+                        hemoglobinaGlicosilada: hba1cVal || pAntigo.hemoglobinaGlicosilada,
+                        dataColeta: coletaVal || pAntigo.dataColeta,
+                        bolsaFamilia: bolsaVal || pAntigo.bolsaFamilia
+                    };
+                } else {
+                    return {
+                        id: idx + 1,
+                        programa: progVal,
+                        classificacao: classVal,
+                        nome: nomeNovo,
+                        dtNascimento: dtNascVal,
+                        idade: idadeVal,
+                        sexo: sexoVal,
+                        enderecoOriginal: ruaOriginal.toUpperCase(),
+                        endereco: formatarEnderecoParaIniciais(ruaOriginal),
+                        numero: numVal,
+                        bairro: bairroVal,
+                        ultimaConsulta: dtConsVal,
+                        situacao: situacaoVal,
+                        hemoglobinaGlicosilada: hba1cVal,
+                        dataColeta: coletaVal,
+                        bolsaFamilia: bolsaVal,
+                        periodo: 'Manhã',
+                        registrado: false,
+                        complemento: '',
+                        complexo: false, complexoTipos: '', complexoObs: '',
+                        tabagismo: false, tabagismoTipos: '', tabagismoObs: '',
+                        historico: []
+                    };
+                }
+            }).filter(Boolean);
+
+            localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
+            alert(`Sucesso! ${pacientes.length} registros atualizados mantendo as anotações anteriores.`);
+            mudarAba('pacientes');
+            renderizarPacientes();
         }
 
         function carregarDadosExemplo() {
