@@ -10,7 +10,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* TEMA CLARO PARA USO NO SOL */
+        /* TEMA CLARO / ALTO CONTRASTE PARA USO NO SOL */
         body.light-theme {
             background-color: #f1f5f9 !important;
             color: #0f172a !important;
@@ -23,11 +23,11 @@
         body.light-theme .bg-slate-900 { background-color: #ffffff !important; color: #0f172a !important; }
         body.light-theme .bg-slate-800 { background-color: #ffffff !important; color: #0f172a !important; border-color: #cbd5e1 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         body.light-theme .text-slate-100, body.light-theme .text-slate-200 { color: #0f172a !important; }
-        body.light-theme .text-slate-300, body.light-theme .text-slate-400 { color: #334155 !important; }
+        body.light-theme .text-slate-300, body.light-theme .text-slate-400, body.light-theme .text-slate-500 { color: #1e293b !important; font-weight: 500; }
         body.light-theme input, body.light-theme select, body.light-theme textarea {
             background-color: #f8fafc !important;
             color: #0f172a !important;
-            border-color: #94a3b8 !important;
+            border-color: #64748b !important;
         }
         body.light-theme nav {
             background-color: #ffffff !important;
@@ -300,12 +300,12 @@
                 <!-- SELETOR DE DATA OFICIAL E PERÍODO -->
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Data da Visita / Atendimento</label>
-                        <input type="date" id="edit-ultima-visita" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        <label class="block text-slate-300 mb-1 font-semibold">Data da Visita / Atendimento</label>
+                        <input type="date" id="edit-ultima-visita" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Período</label>
-                        <select id="edit-periodo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        <label class="block text-slate-300 mb-1 font-semibold">Período</label>
+                        <select id="edit-periodo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium">
                             <option value="Manhã">☀️ Manhã</option>
                             <option value="Tarde">🌙 Tarde</option>
                         </select>
@@ -313,8 +313,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Complemento / Observações Especiais</label>
-                    <input type="text" id="edit-complemento" placeholder="Ex: Deficiente visual, vulnerável, LGBTQIA+, acamado..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                    <label class="block text-slate-300 mb-1 font-semibold">Complemento / Observações Especiais</label>
+                    <input type="text" id="edit-complemento" placeholder="Ex: Deficiente visual, vulnerável, LGBTQIA+, acamado..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium">
                 </div>
 
                 <!-- BLOCO DE PACIENTE COMPLEXO -->
@@ -324,8 +324,8 @@
                         <span class="font-bold text-purple-300">🧠 Classificar como Paciente Complexo</span>
                     </label>
                     <div id="detalhes-complexo-div" class="hidden space-y-2 pt-1">
-                        <label class="block text-slate-400 font-semibold">Especifique a Condição Complexa:</label>
-                        <div class="grid grid-cols-2 gap-1.5 text-slate-300">
+                        <label class="block text-slate-300 font-semibold">Especifique a Condição Complexa:</label>
+                        <div class="grid grid-cols-2 gap-1.5 text-slate-200">
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Acamado" class="chk-comp accent-purple-500"> <span>Acamado</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Deficiência Física" class="chk-comp accent-purple-500"> <span>Def. Física</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Deficiência Visual" class="chk-comp accent-purple-500"> <span>Def. Visual</span></label>
@@ -333,7 +333,7 @@
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Síndrome de Down" class="chk-comp accent-purple-500"> <span>Síndrome de Down</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Transtorno Mental" class="chk-comp accent-purple-500"> <span>Transt. Mental</span></label>
                         </div>
-                        <input type="text" id="edit-complexo-obs" placeholder="Outra especificação..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mt-1">
+                        <input type="text" id="edit-complexo-obs" placeholder="Outra especificação..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium mt-1">
                     </div>
                 </div>
 
@@ -344,13 +344,13 @@
                         <span class="font-bold text-amber-300">🚬 Tabagismo, Álcool ou Dependências Químicas</span>
                     </label>
                     <div id="detalhes-tabagismo-div" class="hidden space-y-2 pt-1">
-                        <div class="grid grid-cols-2 gap-2 text-slate-300">
+                        <div class="grid grid-cols-2 gap-2 text-slate-200">
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Tabagismo" class="chk-tab accent-amber-500"> <span>Tabagismo (Fumante)</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Uso de Álcool" class="chk-tab accent-amber-500"> <span>Uso Nocivo de Álcool</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Outras Drogas" class="chk-tab accent-amber-500"> <span>Outras Dependências</span></label>
                             <label class="flex items-center space-x-1.5"><input type="checkbox" value="Em Tratamento/CAPS" class="chk-tab accent-amber-500"> <span>Em Tratamento (CAPS)</span></label>
                         </div>
-                        <input type="text" id="edit-tab-obs" placeholder="Detalhes (ex: Em cessação de tabagismo...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mt-1">
+                        <input type="text" id="edit-tab-obs" placeholder="Detalhes (ex: Em cessação de tabagismo...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium mt-1">
                     </div>
                 </div>
 
@@ -358,32 +358,20 @@
                 <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-emerald-500/40">
                     <span class="font-bold text-emerald-400 block">➕ Novo Registro no Prontuário</span>
                     <div>
-                        <label class="block text-slate-400 mb-1">Motivo da Busca Ativa (Novo)</label>
-                        <input type="text" id="edit-motivo-busca" placeholder="Ex: Falta à consulta..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                        <label class="block text-slate-300 mb-1">Motivo da Busca Ativa (Novo)</label>
+                        <input type="text" id="edit-motivo-busca" placeholder="Ex: Falta à consulta..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1">Visita Domiciliar / Evolução (Novo)</label>
-                        <textarea id="edit-visita-contato" rows="2" placeholder="O que foi conversado, orientações..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100"></textarea>
+                        <label class="block text-slate-300 mb-1">Visita Domiciliar / Evolução (Novo)</label>
+                        <textarea id="edit-visita-contato" rows="2" placeholder="O que foi conversado, orientações..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium"></textarea>
                     </div>
                 </div>
 
                 <!-- HISTÓRICO ANTERIOR EM FORMATO DE SUBMENU (ACORDEÃO) -->
                 <div class="space-y-1">
-                    <label class="block text-slate-400 font-semibold">📜 Histórico de Prontuário (Clique na data para ver)</label>
-                    <div id="historico-prontuario" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1.5 text-[11px] text-slate-300">
+                    <label class="block text-slate-300 font-semibold">📜 Histórico de Prontuário (Clique na data para ver)</label>
+                    <div id="historico-prontuario" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1.5 text-[11px] text-slate-200 font-medium">
                         <!-- Preenchido via script -->
-                    </div>
-                </div>
-
-                <!-- RESPONSÁVEL E CUIDADOR -->
-                <div id="bloco-resp-cuidador" class="grid grid-cols-2 gap-2 pt-2">
-                    <div>
-                        <label class="block text-slate-400 font-semibold mb-1">Responsável</label>
-                        <input type="text" id="edit-responsavel" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 font-semibold mb-1">Cuidador</label>
-                        <input type="text" id="edit-cuidador" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
                     </div>
                 </div>
 
@@ -392,71 +380,19 @@
                     <span class="font-bold text-emerald-400 block">🔹 Diabetes (DM)</span>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-slate-400 mb-1">Glicada (HbA1c)</label>
-                            <input type="text" id="edit-glicada" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                            <label class="block text-slate-300 mb-1">Glicada (HbA1c)</label>
+                            <input type="text" id="edit-glicada" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1">Data Coleta Glicada</label>
-                            <input type="text" id="edit-datacoleta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
+                            <label class="block text-slate-300 mb-1">Data Coleta Glicada</label>
+                            <input type="text" id="edit-datacoleta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-medium">
                         </div>
                     </div>
-                </div>
-
-                <!-- BLOCO HIPERTENSÃO (HAS) -->
-                <div id="bloco-has" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <span class="font-bold text-emerald-400 block">🔹 Hipertensão (HAS)</span>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-slate-400">ECG</label>
-                            <input type="text" id="edit-ecg" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400">MAPA</label>
-                            <input type="text" id="edit-mapa" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BLOCO GESTANTE (GES) -->
-                <div id="bloco-ges" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-emerald-400">🔹 Gestante (GES)</span>
-                    </div>
-                    
-                    <div id="aviso-vacina-gestante" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-2 rounded-lg text-[11px] font-semibold flex items-center space-x-1.5">
-                        <span>⚠️</span>
-                        <span>Período ideal de vacinação (DTPA / Hepatite B / Influenza): 14 a 27 semanas!</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-slate-400">Semanas</label>
-                            <input type="text" id="edit-semanas" oninput="checarAvisoVacinaModal()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 font-bold text-emerald-400">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400">Risco</label>
-                            <input type="text" id="edit-risco" placeholder="Ex: Habitual / Alto" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BLOCO CRIANÇA (CR) -->
-                <div id="bloco-cr" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <span class="font-bold text-emerald-400 block">🔹 Criança (CR)</span>
-                    <label class="block text-slate-400">Vacinas Faltantes / Acompanhamento</label>
-                    <input type="text" id="edit-vacinas-cr" placeholder="Ex: Pentavalente pendente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100">
-                </div>
-
-                <!-- BLOCO IDOSO (ID) -->
-                <div id="bloco-id" class="hidden space-y-2 bg-slate-900/40 p-2.5 rounded-xl border border-slate-700">
-                    <span class="font-bold text-emerald-400 block">🔹 Idoso (ID)</span>
-                    <label class="block text-slate-400">Vacinas (Idoso)</label>
-                    <input type="text" id="edit-vacinas-id" placeholder="Ex: Influenza em dia" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-100 mb-2">
                 </div>
             </div>
 
             <div class="flex justify-end space-x-2 pt-2 border-t border-slate-700">
-                <button onclick="fecharModal()" class="bg-slate-700 hover:bg-slate-600 text-xs px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                <button onclick="fecharModal()" class="bg-slate-700 hover:bg-slate-600 text-xs px-4 py-2 rounded-lg font-semibold text-slate-100">Cancelar</button>
                 <button onclick="salvarEdicaoPaciente()" class="bg-emerald-600 hover:bg-emerald-500 text-xs px-4 py-2 rounded-lg font-bold text-white">Salvar no Prontuário</button>
             </div>
         </div>
@@ -561,12 +497,6 @@
             return texto;
         }
 
-        function extrairNumeroSemanas(strSemanas) {
-            if(!strSemanas) return 0;
-            const match = strSemanas.match(/\d+/);
-            return match ? parseInt(match[0]) : 0;
-        }
-
         function calcularMeses(dataStr) {
             if(!dataStr || dataStr === '-') return 0;
             const iso = formatarDataParaISO(dataStr);
@@ -585,7 +515,7 @@
         }
 
         function formatarEnderecoParaIniciais(nomeRua) {
-            if(!nomeRua) return 'RUA';
+            if(!nomeRua) return 'RUA PRINCIPAL';
             const limpo = nomeRua.trim().toUpperCase();
             for(let b in BLOCOS_RUAS) {
                 const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === limpo || limpo.includes(r.nome.toUpperCase()));
@@ -746,7 +676,7 @@
                 const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === nomeRua.toUpperCase());
                 if(achado) return achado.iniciais;
             }
-            return nomeRua;
+            return nomeRua || 'RUA';
         }
 
         function atualizarBadgesETags() {
@@ -782,8 +712,6 @@
                 localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
             }
         }
-
-        function checarAvisoVacinaModal() {}
 
         function toggleBlocoComplexo() {
             const marcado = document.getElementById('edit-complexo').checked;
@@ -828,15 +756,15 @@
 
             const histDiv = document.getElementById('historico-prontuario');
             if(!p.historico || p.historico.length === 0) {
-                histDiv.innerHTML = `<span class="text-slate-500 px-2">Nenhum registro anterior no prontuário.</span>`;
+                histDiv.innerHTML = `<span class="text-slate-400 px-2 font-medium">Nenhum registro anterior no prontuário.</span>`;
             } else {
                 histDiv.innerHTML = p.historico.map((h, index) => `
                     <div class="bg-slate-800 rounded border border-slate-700 overflow-hidden">
                         <button type="button" onclick="toggleSubmenuHistorico(${index})" class="w-full text-left px-3 py-1.5 bg-slate-800 hover:bg-slate-700 flex justify-between items-center text-emerald-400 font-bold transition">
                             <span>📅 ${h.data} (${h.periodo || 'Manhã'})</span>
-                            <span id="seta-hist-${index}" class="text-xs text-slate-400">▼</span>
+                            <span id="seta-hist-${index}" class="text-xs text-slate-300">▼</span>
                         </button>
-                        <div id="corpo-hist-${index}" class="hidden p-2.5 bg-slate-900/80 border-t border-slate-700 space-y-1 text-slate-300">
+                        <div id="corpo-hist-${index}" class="hidden p-2.5 bg-slate-900/90 border-t border-slate-700 space-y-1 text-slate-200">
                             <div><strong>Motivo BA:</strong> ${h.motivo || '-'}</div>
                             <div><strong>Contato/Evolução:</strong> ${h.contato || '-'}</div>
                         </div>
@@ -846,10 +774,6 @@
 
             const progU = (p.programa || "").toUpperCase();
             document.getElementById('bloco-dm').classList.toggle('hidden', !progU.includes('DIABET') && !progU.includes('DM'));
-            document.getElementById('bloco-has').classList.toggle('hidden', !progU.includes('HIPERTENS') && !progU.includes('HAS'));
-            document.getElementById('bloco-ges').classList.toggle('hidden', !progU.includes('GESTA') && !progU.includes('GES'));
-            document.getElementById('bloco-cr').classList.toggle('hidden', !progU.includes('CRIANÇA') && !progU.includes('CR'));
-            document.getElementById('bloco-id').classList.toggle('hidden', !progU.includes('IDOSO') && !progU.includes('ID'));
 
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
@@ -942,7 +866,8 @@
             const listaDiv = document.getElementById('lista-pacientes');
 
             let filtrados = pacientes.filter(p => {
-                const matchBusca = p.nome.toLowerCase().includes(busca);
+                const nomeP = p.nome || "";
+                const matchBusca = nomeP.toLowerCase().includes(busca);
                 const endNorm = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
                 const matchRua = ruasSelecionadasPac.size === 0 || ruasSelecionadasPac.has(endNorm);
                 
@@ -982,15 +907,15 @@
             });
 
             if(filtrados.length === 0) {
-                listaDiv.innerHTML = `<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-slate-400 text-sm">Nenhum paciente encontrado para os filtros selecionados.</div>`;
+                listaDiv.innerHTML = `<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-slate-300 text-sm font-semibold">Nenhum paciente encontrado para os filtros selecionados.</div>`;
                 return;
             }
 
             listaDiv.innerHTML = filtrados.map(p => {
                 const statusVisita = avaliarStatusVisita(p);
-                let badgeClass = 'bg-emerald-500/20 text-emerald-300';
-                if(statusVisita === 'Urgente') badgeClass = 'bg-red-500/20 text-red-300 border border-red-500/30';
-                if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                let badgeClass = 'bg-emerald-500/20 text-emerald-300 font-bold';
+                if(statusVisita === 'Urgente') badgeClass = 'bg-red-500/20 text-red-300 border border-red-500/30 font-bold';
+                if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold';
 
                 let ultimoHistorico = (p.historico && p.historico.length > 0) ? p.historico[0] : {motivo: '-', contato: '-'};
                 const programaAbreviado = formatarProgramaAbreviado(p.programa);
@@ -1000,38 +925,46 @@
                 let detalhesEspecificosHtml = '';
                 
                 if (progU.includes('DIABET') || progU.includes('DM')) {
-                    if(p.hemoglobinaGlicosilada) detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">HbA1c: <strong>${p.hemoglobinaGlicosilada}</strong></span>`;
-                    if(p.dataColeta) detalhesEspecificosHtml += `<span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Coleta: <strong>${p.dataColeta}</strong></span>`;
+                    if(p.hemoglobinaGlicosilada) detalhesEspecificosHtml += `<span class="bg-slate-700/80 px-2 py-1 rounded text-slate-100 font-medium">HbA1c: <strong>${p.hemoglobinaGlicosilada}</strong></span>`;
+                    if(p.dataColeta) detalhesEspecificosHtml += `<span class="bg-slate-700/80 px-2 py-1 rounded text-slate-100 font-medium">Coleta: <strong>${p.dataColeta}</strong></span>`;
                 }
 
-                let complementoHtml = p.complemento ? `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">Obs/Compl: <strong>${p.complemento}</strong></span>` : '';
+                let complementoHtml = p.complemento ? `<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded font-medium">Obs/Compl: <strong>${p.complemento}</strong></span>` : '';
                 let complexoBadge = p.complexo ? `<span class="bg-purple-600/30 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">🧠 Complexo: ${p.complexoTipos || 'Sim'}</span>` : '';
                 let tabBadge = p.tabagismo ? `<span class="bg-amber-600/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded font-bold">🚬 Tab/Álc: ${p.tabagismoTipos || 'Sim'}</span>` : '';
 
+                let nomeExibicao = p.nome || 'Usuário Sem Nome';
+                let idadeExibicao = p.idade !== undefined && p.idade !== "" ? p.idade : '0';
+                let sexoExibicao = p.sexo || 'N/I';
+                let endExibicao = p.enderecoOriginal || p.endereco || 'Rua Principal';
+                let numExibicao = p.numero || 'S/N';
+                let bairroExibicao = p.bairro ? ` - ${p.bairro}` : '';
+                let bolsaExibicao = p.bolsaFamilia || 'Não';
+
                 return `
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative shadow-md">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center space-x-2.5">
                                 <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer" title="Marcar como registrado no sistema">
                                 <div>
-                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${programaAbreviado} ${p.classfilcacao ? '· ' + p.classificacao : ''}</span>
-                                    <h3 class="font-bold text-base text-slate-100">${p.nome}</h3>
+                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">${programaAbreviado} ${p.classificacao ? '· ' + p.classificacao : ''}</span>
+                                    <h3 class="font-bold text-base text-slate-100">${nomeExibicao}</h3>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${badgeClass}">Visita: ${statusVisita}</span>
-                                <button onclick="abrirModalEdicao(${p.id})" class="bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg transition" title="Abrir Prontuário">📖 Prontuário</button>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full ${badgeClass}">Visita: ${statusVisita}</span>
+                                <button onclick="abrirModalEdicao(${p.id})" class="bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition" title="Abrir Prontuário">📖 Prontuário</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-300 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
-                            <div><span class="text-slate-500 block">Idade / Sexo:</span> ${p.idade} anos · ${p.sexo} ${p.dtNascimento ? '('+p.dtNascimento+')' : ''}</div>
-                            <div><span class="text-slate-500 block">Endereço:</span> ${p.endereco}, ${p.numero} - ${p.bairro || ''}</div>
-                            <div><span class="text-slate-500 block">Bolsa Família:</span> ${p.bolsaFamilia || 'Não'}</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700">
+                            <div><span class="text-slate-400 block font-semibold">Idade / Sexo:</span> <span class="font-bold">${idadeExibicao} anos · ${sexoExibicao}</span></div>
+                            <div><span class="text-slate-400 block font-semibold">Endereço:</span> <span class="font-bold">${endExibicao}, ${numExibicao}${bairroExibicao}</span></div>
+                            <div><span class="text-slate-400 block font-semibold">Bolsa Família:</span> <span class="font-bold">${bolsaExibicao}</span></div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
-                            <span class="bg-slate-700 px-2 py-1 rounded text-slate-200">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
-                            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded">Últ. BA: <strong>${ultimoHistorico.motivo}</strong></span>
-                            <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded">Últ. Contato: <strong>${ultimoHistorico.contato}</strong></span>
+                            <span class="bg-slate-700/80 px-2 py-1 rounded text-slate-100 font-medium">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
+                            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded font-medium">Últ. BA: <strong>${ultimoHistorico.motivo}</strong></span>
+                            <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded font-medium">Últ. Contato: <strong>${ultimoHistorico.contato}</strong></span>
                             ${complementoHtml}
                             ${complexoBadge}
                             ${tabBadge}
@@ -1081,9 +1014,9 @@
                     <tr onclick="filtrarPorPainelPrograma('${cat.chave}')" class="hover:bg-slate-700/80 cursor-pointer transition">
                         <td class="p-2.5 font-semibold text-emerald-300 underline">${cat.nome}</td>
                         <td class="p-2.5 text-center font-bold text-emerald-400">${total}</td>
-                        <td class="p-2.5 text-center text-blue-400">${ativos}</td>
-                        <td class="p-2.5 text-center text-red-400">${urgentes}</td>
-                        <td class="p-2.5 text-center text-amber-400">${inativos}</td>
+                        <td class="p-2.5 text-center text-blue-400 font-semibold">${ativos}</td>
+                        <td class="p-2.5 text-center text-red-400 font-semibold">${urgentes}</td>
+                        <td class="p-2.5 text-center text-amber-400 font-semibold">${inativos}</td>
                     </tr>
                 `;
             }).join('');
@@ -1106,7 +1039,7 @@
                     </tr>
                 `;
             }
-            tbodyRuas.innerHTML = ruasHtml || `<tr><td colspan="3" class="p-4 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
+            tbodyRuas.innerHTML = ruasHtml || `<tr><td colspan="3" class="p-4 text-center text-slate-400 font-semibold">Nenhum registro encontrado.</td></tr>`;
         }
 
         function construirTabelaRelatorioA4() {
@@ -1118,13 +1051,13 @@
 
             let agrupado = {};
             filtrados.forEach(p => {
-                let chave = `${(p.enderecoOriginal || p.endereco).trim().toUpperCase()}|${p.numero}`;
+                let chave = `${(p.enderecoOriginal || p.endereco).trim().toUpperCase()}|${p.numero || 'S/N'}`;
                 if(!agrupado[chave]) agrupado[chave] = [];
                 agrupado[chave].push(p);
             });
 
             if(Object.keys(agrupado).length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nenhum dado encontrado para as ruas selecionadas.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4 font-semibold">Nenhum dado encontrado para as ruas selecionadas.</p>`;
                 return;
             }
 
@@ -1157,7 +1090,7 @@
                     const perAbrev = ultimoH.periodo ? ` (${ultimoH.periodo})` : '';
                     html += `
                         <tr>
-                            <td class="font-medium">${p.nome}</td>
+                            <td class="font-medium">${p.nome || 'Sem Nome'}</td>
                             <td>${progAbrev}</td>
                             <td><strong>[${ultimoH.data}${perAbrev}]</strong><br><strong>BA:</strong> ${ultimoH.motivo}<br><strong>Contato:</strong> ${ultimoH.contato}</td>
                             <td>${p.complemento || '-'}</td>
@@ -1185,16 +1118,20 @@
                     const dadosNovos = results.data;
                     let mapaExistente = {};
                     pacientes.forEach(p => {
-                        let chaveUnica = `${p.nome.trim().toUpperCase()}|${(p.enderecoOriginal || p.endereco || "").trim().toUpperCase()}`;
+                        let nomeP = (p.nome || "").trim().toUpperCase();
+                        let endP = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
+                        let chaveUnica = `${nomeP}|${endP}`;
                         mapaExistente[chaveUnica] = p;
                     });
 
                     pacientes = dadosNovos.map((row, idx) => {
-                        const nomeNovo = (row['Usuário'] || row['usuario'] || row['Nome'] || 'Desconhecido').trim();
+                        const nomeNovo = (row['Usuário'] || row['usuario'] || row['Nome'] || row['nome'] || '').trim();
+                        if(!nomeNovo) return null; // ignora linhas vazias
+
                         const ruaOriginal = (row['Endereço'] || row['endereco'] || 'Rua Principal').trim();
                         const chaveUnica = `${nomeNovo.toUpperCase()}|${ruaOriginal.toUpperCase()}`;
 
-                        const progVal = row['Programa'] || row['programas'] || row['Programa'] || 'Geral';
+                        const progVal = row['Programa'] || row['programas'] || 'Geral';
                         const classVal = row['Classificação'] || row['classificacao'] || '';
                         const dtNascVal = row['Dt Nascimento'] || row['dtNascimento'] || '';
                         const idadeVal = row['Idade'] || row['idade'] || 0;
@@ -1212,20 +1149,20 @@
                             return {
                                 ...pAntigo,
                                 id: idx + 1,
-                                programa: progVal,
-                                classificacao: classVal,
-                                dtNascimento: dtNascVal,
-                                idade: idadeVal,
-                                sexo: sexoVal,
+                                programa: progVal || pAntigo.programa,
+                                classificacao: classVal || pAntigo.classificacao,
+                                dtNascimento: dtNascVal || pAntigo.dtNascimento,
+                                idade: idadeVal || pAntigo.idade,
+                                sexo: sexoVal || pAntigo.sexo,
                                 enderecoOriginal: ruaOriginal.toUpperCase(),
                                 endereco: formatarEnderecoParaIniciais(ruaOriginal),
-                                numero: numVal,
-                                bairro: bairroVal,
-                                ultimaConsulta: dtConsVal,
-                                situacao: situacaoVal,
+                                numero: numVal || pAntigo.numero,
+                                bairro: bairroVal || pAntigo.bairro,
+                                ultimaConsulta: dtConsVal || pAntigo.ultimaConsulta,
+                                situacao: situacaoVal || pAntigo.situacao,
                                 hemoglobinaGlicosilada: hba1cVal || pAntigo.hemoglobinaGlicosilada,
                                 dataColeta: coletaVal || pAntigo.dataColeta,
-                                bolsaFamilia: bolsaVal
+                                bolsaFamilia: bolsaVal || pAntigo.bolsaFamilia
                             };
                         } else {
                             return {
@@ -1253,7 +1190,7 @@
                                 historico: []
                             };
                         }
-                    });
+                    }).filter(Boolean); // remove nulos
 
                     localStorage.setItem('acs_pacientes_oficial', JSON.stringify(pacientes));
                     alert(`Sucesso! ${pacientes.length} registros atualizados mantendo as anotações anteriores.`);
