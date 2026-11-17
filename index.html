@@ -207,7 +207,6 @@
                                     <th class="p-2.5">Indicador / Categoria</th>
                                     <th class="p-2.5 text-center">Total</th>
                                     <th class="p-2.5 text-center">Ativos</th>
-                                    <th class="p-2.5 text-center">Urgentes</th>
                                     <th class="p-2.5 text-center">Inativos</th>
                                 </tr>
                             </thead>
@@ -297,7 +296,7 @@
         <section id="tab-config" class="hidden space-y-4">
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                 <h2 class="font-bold text-lg text-white">📋 Atualizar por Copiar e Colar (Por Indicador)</h2>
-                <p class="text-xs text-slate-300">Selecione o indicador abaixo, cole a tabela copiada da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. A idade será lida diretamente da coluna de idade.</p>
+                <p class="text-xs text-slate-300">Selecione o indicador abaixo, cole a tabela copiada da prefeitura (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+C</kbd>) e cole (<kbd class="bg-slate-700 px-1 py-0.5 rounded text-white">Ctrl+V</kbd>) na caixa correspondente. O endereço completo e o status (Ativo/Inativo) virão direto da planilha.</p>
                 
                 <!-- SUBMENUS DE INDICADORES PARA COLAR -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -583,35 +582,25 @@
             return texto;
         }
 
-        function calcularMeses(dataStr) {
-            if(!dataStr || dataStr === '-') return 0;
-            const iso = formatarDataParaISO(dataStr);
-            const dataConsulta = new Date(iso);
-            const hoje = new Date();
-            const diffTime = hoje - dataConsulta;
-            return (diffTime / (1000 * 60 * 60 * 24)) / 30;
-        }
-
         function avaliarStatusVisita(p) {
-            const meses = calcularMeses(p.ultimaConsulta);
-            if (meses > 6) return 'Inativo';
-            if (meses >= 5) return 'Urgente';
+            // Considera o status oficial que veio da planilha (ATIVO ou INATIVO)
+            if (p.situacaoOficial && p.situacaoOficial.toUpperCase().includes('INATIVO')) {
+                return 'Inativo';
+            }
             return 'Ativo';
         }
 
-        function formatarEnderecoParaIniciais(nomeRua) {
-            if(!nomeRua) return 'RUA PRINCIPAL';
-            const limpo = String(nomeRua).trim().toUpperCase();
+        function obterIniciaisPorNome(nomeRua) {
             for(let b in BLOCOS_RUAS) {
-                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === limpo || limpo.includes(r.nome.toUpperCase()));
+                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === String(nomeRua).toUpperCase());
                 if(achado) return achado.iniciais;
             }
-            return limpo;
+            return nomeRua || 'RUA';
         }
 
         if (pacientes.length === 0) {
             pacientes = [
-                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoOriginal: "RUA EDUARDO PINTO DA ROCHA", endereco: "EP", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacao: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
+                { id: 1, programa: "SAUDE DO IDOSO", classificacao: "ROBUSTO", nome: "MARIA G. S.", dtNascimento: "15/05/1954", idade: 72, sexo: "F", enderecoCompleto: "RUA EDUARDO PINTO DA ROCHA, 120 - Centro", numero: "120", bairro: "Centro", ultimaConsulta: "2026-01-10", situacaoOficial: "ATIVO", hemoglobinaGlicosilada: "", dataColeta: "", bolsaFamilia: "SIM", registrado: false, complemento: "", complexo: false, tabagismo: false, historico: [] }
             ];
             localStorage.setItem('acs_pacientes_cristiane', JSON.stringify(pacientes));
         }
@@ -648,7 +637,7 @@
 
         function atualizarEstatisticas() {
             document.getElementById('stat-total').innerText = pacientes.length;
-            document.getElementById('stat-urgente').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Urgente').length;
+            document.getElementById('stat-urgente').innerText = 0;
             document.getElementById('stat-ativos').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Ativo').length;
             document.getElementById('stat-inativos').innerText = pacientes.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
         }
@@ -767,14 +756,6 @@
                 construirMenusCheckbox();
                 construirTabelaRelatorioA4();
             }
-        }
-
-        function obterIniciaisPorNome(nomeRua) {
-            for(let b in BLOCOS_RUAS) {
-                const achado = BLOCOS_RUAS[b].find(r => r.nome.toUpperCase() === String(nomeRua).toUpperCase());
-                if(achado) return achado.iniciais;
-            }
-            return nomeRua || 'RUA';
         }
 
         function atualizarBadgesETags() {
@@ -966,12 +947,22 @@
             let filtrados = pacientes.filter(p => {
                 const nomeP = p.nome || "";
                 const matchBusca = nomeP.toLowerCase().includes(busca);
-                const endNorm = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
-                const matchRua = ruasSelecionadasPac.size === 0 || ruasSelecionadasPac.has(endNorm);
+                const endCompletoNorm = (p.enderecoCompleto || "").trim().toUpperCase();
+                
+                // Verifica se o endereço completo contém alguma das ruas selecionadas
+                let matchRua = true;
+                if(ruasSelecionadasPac.size > 0) {
+                    matchRua = false;
+                    for(let ruaSel of ruasSelecionadasPac) {
+                        if(endCompletoNorm.includes(ruaSel.toUpperCase())) {
+                            matchRua = true;
+                            break;
+                        }
+                    }
+                }
                 
                 const stVisita = avaliarStatusVisita(p);
                 let matchStatus = true;
-                if(filtroAtualStatus === 'URGENTE') matchStatus = (stVisita === 'Urgente');
                 if(filtroAtualStatus === 'ATIVOS') matchStatus = (stVisita === 'Ativo');
                 if(filtroAtualStatus === 'INATIVOS') matchStatus = (stVisita === 'Inativo');
 
@@ -1010,7 +1001,6 @@
             listaDiv.innerHTML = filtrados.map(p => {
                 const statusVisita = avaliarStatusVisita(p);
                 let badgeClass = 'bg-emerald-500/20 text-emerald-500 font-bold border border-emerald-500/30';
-                if(statusVisita === 'Urgente') badgeClass = 'bg-red-500/20 text-red-500 border border-red-500/30 font-bold';
                 if(statusVisita === 'Inativo') badgeClass = 'bg-amber-500/20 text-amber-500 border border-amber-500/30 font-bold';
 
                 let ultimoHistorico = (p.historico && p.historico.length > 0) ? p.historico[0] : {motivo: '-', contato: '-'};
@@ -1032,9 +1022,7 @@
                 let nomeExibicao = p.nome || 'Usuário Sem Nome';
                 let idadeExibicao = (p.idade !== undefined && p.idade !== "") ? `${p.idade} anos` : '0 anos';
                 let sexoExibicao = p.sexo || 'N/I';
-                let endExibicao = p.enderecoOriginal || p.endereco || 'Rua Principal';
-                let numExibicao = p.numero || 'S/N';
-                let bairroExibicao = p.bairro ? ` - ${p.bairro}` : '';
+                let enderecoCompletoExibicao = p.enderecoCompleto || 'Endereço não informado';
 
                 return `
                     <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative shadow-sm">
@@ -1043,18 +1031,17 @@
                                 <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer" title="Marcar como registrado no sistema">
                                 <div>
                                     <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">${programaAbreviado} ${p.classificacao ? '· ' + p.classificacao : ''}</span>
-                                    <h3 class="font-bold text-base text-white">${nomeExibicao}</h3>
+                                    <h3 class="font-bold text-base text-white whitespace-normal break-words">${nomeExibicao}</h3>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <span class="text-xs px-2.5 py-0.5 rounded-full ${badgeClass}">Visita: ${statusVisita}</span>
-                                <button onclick="abrirModalEdicao(${p.id})" class="btn-prontuario bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition" title="Abrir Prontuário">📖 Prontuário</button>
+                                <button onclick="abrirModalEdicao(${p.id})" class="btn-prontuario bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition shrink-0" title="Abrir Prontuário">📖 Prontuário</button>
                             </div>
                         </div>
-                        <div class="caixa-info-paciente grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-white bg-slate-700/30 p-2.5 rounded-lg border border-slate-600/40">
+                        <div class="caixa-info-paciente grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-white bg-slate-700/30 p-2.5 rounded-lg border border-slate-600/40">
                             <div><span class="label-info text-slate-300 block font-medium">Idade / Sexo:</span> <span class="valor-info font-bold">${idadeExibicao} · ${sexoExibicao}</span></div>
-                            <div><span class="label-info text-slate-300 block font-medium">Endereço:</span> <span class="valor-info font-bold">${endExibicao}, ${numExibicao}${bairroExibicao}</span></div>
-                            <div><span class="label-info text-slate-300 block font-medium">Bolsa Família:</span> <span class="valor-info font-bold">${p.bolsaFamilia || 'Não'}</span></div>
+                            <div class="sm:col-span-2"><span class="label-info text-slate-300 block font-medium">Endereço Completo:</span> <span class="valor-info font-bold">${enderecoCompletoExibicao}</span></div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1 text-[11px]">
                             <span class="badge-visita bg-slate-700/80 px-2 py-1 rounded text-white font-medium">Últ. Visita: <strong>${p.ultimaConsulta}${periodoVisita}</strong></span>
@@ -1098,7 +1085,6 @@
 
                 const total = filtrados.length;
                 const ativos = filtrados.filter(p => avaliarStatusVisita(p) === 'Ativo').length;
-                const urgentes = filtrados.filter(p => avaliarStatusVisita(p) === 'Urgente').length;
                 const inativos = filtrados.filter(p => avaliarStatusVisita(p) === 'Inativo').length;
 
                 return `
@@ -1106,7 +1092,6 @@
                         <td class="p-2.5 font-semibold text-emerald-500 underline">${cat.nome}</td>
                         <td class="p-2.5 text-center font-bold text-emerald-500">${total}</td>
                         <td class="p-2.5 text-center text-blue-500 font-semibold">${ativos}</td>
-                        <td class="p-2.5 text-center text-red-500 font-semibold">${urgentes}</td>
                         <td class="p-2.5 text-center text-amber-500 font-semibold">${inativos}</td>
                     </tr>
                 `;
@@ -1114,8 +1099,8 @@
 
             let contagemRuas = {};
             pacientes.forEach(p => {
-                let ruaOriginal = (p.enderecoOriginal || p.endereco || "NÃO INFORMADA").trim().toUpperCase();
-                contagemRuas[ruaOriginal] = (contagemRuas[ruaOriginal] || 0) + 1;
+                let endOriginal = (p.enderecoCompleto || "NÃO INFORMADA").trim().toUpperCase();
+                contagemRuas[endOriginal] = (contagemRuas[endOriginal] || 0) + 1;
             });
 
             const tbodyRuas = document.getElementById('tabela-quant-ruas');
@@ -1136,61 +1121,50 @@
         function construirTabelaRelatorioA4() {
             const container = document.getElementById('corpo-tabela-relatorio');
             let filtrados = pacientes.filter(p => {
-                const endNorm = (p.enderecoOriginal || p.endereco || "").trim().toUpperCase();
-                return ruasSelecionadasRel.size === 0 || ruasSelecionadasRel.has(endNorm);
+                const endNorm = (p.enderecoCompleto || "").trim().toUpperCase();
+                if(ruasSelecionadasRel.size === 0) return true;
+                for(let ruaSel of ruasSelecionadasRel) {
+                    if(endNorm.includes(ruaSel.toUpperCase())) return true;
+                }
+                return false;
             });
 
-            let agrupado = {};
-            filtrados.forEach(p => {
-                let chave = `${(p.enderecoOriginal || p.endereco).trim().toUpperCase()}|${p.numero || 'S/N'}`;
-                if(!agrupado[chave]) agrupado[chave] = [];
-                agrupado[chave].push(p);
-            });
-
-            if(Object.keys(agrupado).length === 0) {
+            if(filtrados.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4 font-semibold">Nenhum dado encontrado para as ruas selecionadas.</p>`;
                 return;
             }
 
-            let html = '';
-            for(let chave in agrupado) {
-                const [ruaNome, num] = chave.split('|');
-                const siglaRua = obterIniciaisPorNome(ruaNome);
-                
-                html += `
-                    <div class="mb-4 break-inside-avoid">
-                        <div class="bg-slate-100 font-bold text-xs p-1.5 border border-slate-300">Endereço (Ref): ${siglaRua} · Nº ${num}</div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nome Usuário</th>
-                                    <th>Indicador</th>
-                                    <th>Prontuário (Último Registro)</th>
-                                    <th>Complemento / Obs</th>
-                                    <th>Dados Clínicos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                agrupado[chave].forEach(p => {
-                    let ultimoH = (p.historico && p.historico.length > 0) ? p.historico[0] : {data: '-', periodo: 'Manhã', motivo: '-', contato: '-'};
-                    let infoExtra = `HbA1c: ${p.hemoglobinaGlicosilada || '-'} (Coleta: ${p.dataColeta || '-'})`;
-                    if(p.complexo) infoExtra += ` | 🧠 Complexo: ${p.complexoTipos}`;
-                    if(p.tabagismo) infoExtra += ` | 🚬 Tab/Álc: ${p.tabagismoTipos}`;
-                    const progAbrev = formatarProgramaAbreviado(p.programa);
-                    const perAbrev = ultimoH.periodo ? ` (${ultimoH.periodo})` : '';
-                    html += `
+            let html = `
+                <table>
+                    <thead>
                         <tr>
-                            <td class="font-medium">${p.nome || 'Sem Nome'}</td>
-                            <td>${progAbrev}</td>
-                            <td><strong>[${ultimoH.data}${perAbrev}]</strong><br><strong>BA:</strong> ${ultimoH.motivo}<br><strong>Contato:</strong> ${ultimoH.contato}</td>
-                            <td>${p.complemento || '-'}</td>
-                            <td>${infoExtra}</td>
+                            <th>Nome Usuário</th>
+                            <th>Indicador</th>
+                            <th>Endereço Completo</th>
+                            <th>Prontuário (Último Registro)</th>
+                            <th>Dados Clínicos</th>
                         </tr>
-                    `;
-                });
-                html += `</tbody></table></div>`;
-            }
+                    </thead>
+                    <tbody>
+            `;
+            filtrados.forEach(p => {
+                let ultimoH = (p.historico && p.historico.length > 0) ? p.historico[0] : {data: '-', periodo: 'Manhã', motivo: '-', contato: '-'};
+                let infoExtra = `HbA1c: ${p.hemoglobinaGlicosilada || '-'} (Coleta: ${p.dataColeta || '-'})`;
+                if(p.complexo) infoExtra += ` | 🧠 Complexo: ${p.complexoTipos}`;
+                if(p.tabagismo) infoExtra += ` | 🚬 Tab/Álc: ${p.tabagismoTipos}`;
+                const progAbrev = formatarProgramaAbreviado(p.programa);
+                const perAbrev = ultimoH.periodo ? ` (${ultimoH.periodo})` : '';
+                html += `
+                    <tr>
+                        <td class="font-medium">${p.nome || 'Sem Nome'}</td>
+                        <td>${progAbrev}</td>
+                        <td>${p.enderecoCompleto || '-'}</td>
+                        <td><strong>[${ultimoH.data}${perAbrev}]</strong><br><strong>BA:</strong> ${ultimoH.motivo}<br><strong>Contato:</strong> ${ultimoH.contato}</td>
+                        <td>${infoExtra}</td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
             container.innerHTML = html;
         }
 
@@ -1198,7 +1172,7 @@
             window.print();
         }
 
-        // MOTOR DE PROCESSAMENTO DE COLAGEM LEVANDO EM CONTA A IDADE DIRETA DA TABELA
+        // MOTOR DE PROCESSAMENTO DE COLAGEM (ENDEREÇO COMPLETO E SITUAÇÃO OFICIAL)
         function processarColagemIndicador(nomeIndicador, programaPadrao, classificacaoPadrao) {
             const texto = document.getElementById(`texto-colar-${nomeIndicador}`).value.trim();
             if(!texto) {
@@ -1231,13 +1205,18 @@
                 }
 
                 let nome = '';
-                let rua = '';
-                let num = 'S/N';
+                let enderecoCompleto = '';
+                let ruaEncontrada = '';
                 let dtNasc = '';
                 let idade = 0;
                 let sexo = 'F';
                 let dtCons = new Date().toISOString().split('T')[0];
+                let situacao = 'ATIVO';
                 let bolsa = 'NÃO';
+
+                // Captura situação (ATIVO / INATIVO)
+                let linhaU = linha.toUpperCase();
+                if (linhaU.includes('INATIVO')) situacao = 'INATIVO';
 
                 // Captura datas no formato DD/MM/AAAA
                 let matchesDatas = linha.match(/(\d{2}\/\d{2}\/\d{4})/g);
@@ -1248,12 +1227,11 @@
                     }
                 }
 
-                // Procura a idade exata (número isolado pequeno após a data de nascimento ou nas colunas)
+                // Procura idade
                 let matchesNumeros = linha.match(/\b(\d{1,3})\b/g);
                 if (matchesNumeros) {
                     for (let numStr of matchesNumeros) {
                         let n = parseInt(numStr);
-                        // Se estiver na faixa de idade plausível (0 a 110)
                         if (n >= 0 && n <= 110 && !matchDataOuAno(numStr, dtNasc)) {
                             idade = n;
                             break;
@@ -1265,31 +1243,30 @@
                 let matchSexo = linha.match(/\b(M|F)\b/);
                 if (matchSexo) sexo = matchSexo[1];
 
-                // Identifica a rua válida
+                // Identifica a rua válida e extrai o endereço completo da linha
                 for (let ruaValida of RUAS_VALIDAS_MICROAREA) {
                     if (linha.toUpperCase().includes(ruaValida)) {
-                        rua = ruaValida;
+                        ruaEncontrada = ruaValida;
                         let partesRua = linha.toUpperCase().split(ruaValida);
                         let antesRua = partesRua[0];
                         
                         // Limpa termos de programas para sobrar o nome
-                        antesRua = antesRua.replace(/CRIANÇA NORMAL \/ ROTINA|CRIANCA|SAUDE DO IDOSO|HIPERTENSO|DIABETICO|ROBUSTO|RISCO AO NASCER|RISCO EVOLUTIVO BIOLOGICO|UMS UMBARA II PSF|PROGRAMA|CLASSIFICACAO/gi, '').trim();
+                        antesRua = antesRua.replace(/CRIANÇA NORMAL \/ ROTINA|CRIANCA|SAUDE DO IDOSO|HIPERTENSO|DIABETICO|ROBUSTO|RISCO AO NASCER|RISCO EVOLUTIVO BIOLOGICO|UMS UMBARA II PSF|PROGRAMA|CLASSIFICACAO|RISCO AO NASCER \(CRITERIOS DNV\)/gi, '').trim();
                         if (antesRua.length > 3) {
                             let palavras = antesRua.split(/\s+/);
                             nome = palavras.slice(-4).join(' ');
                         }
                         
-                        // Extrai número após a rua
-                        let depoisRua = partesRua[1];
-                        if (depoisRua) {
-                            let matchNum = depoisRua.trim().match(/^(\d+)/);
-                            if (matchNum) num = matchNum[1];
-                        }
+                        // Monta o endereço completo a partir da rua encontrada
+                        let restoLinha = partesRua[1] || '';
+                        // Remove datas e status do final do endereço para ficar limpo
+                        restoLinha = restoLinha.replace(/\d{2}\/\d{2}\/\d{4}/g, '').replace(/ATIVO|INATIVO|NÃO|SIM/g, '').trim();
+                        enderecoCompleto = `${ruaValida}${restoLinha ? ' ' + restoLinha : ''}`;
                         break;
                     }
                 }
 
-                if (nome && ehRuaValida(rua)) {
+                if (nome && ehRuaValida(ruaEncontrada)) {
                     nome = nome.replace(/PROGRAMA|CLASSIFICACAO|USUARIO|DT NASCIMENTO|IDADE|SEXO|ENDERECO|Nº|SITUACAO/gi, '').trim();
                     if(nome.length < 3) return;
 
@@ -1301,12 +1278,9 @@
                         dtNascimento: dtNasc || '01/01/2024',
                         idade: idade,
                         sexo: sexo,
-                        enderecoOriginal: rua.toUpperCase(),
-                        endereco: formatarEnderecoParaIniciais(rua),
-                        numero: num,
-                        bairro: 'Centro',
+                        enderecoCompleto: enderecoCompleto.toUpperCase(),
                         ultimaConsulta: dtCons,
-                        situacao: 'ATIVO',
+                        situacaoOficial: situacao,
                         hemoglobinaGlicosilada: '',
                         dataColeta: '',
                         bolsaFamilia: bolsa,
