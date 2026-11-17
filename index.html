@@ -1025,16 +1025,16 @@
                 return `
                     <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 relative shadow-sm">
                         <div class="flex justify-between items-start">
-                            <div class="flex items-center space-x-2.5">
-                                <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer" title="Marcar como registrado no sistema">
-                                <div>
-                                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">${programaAbreviado} ${p.classificacao ? '· ' + p.classificacao : ''}</span>
-                                    <h3 class="font-bold text-base text-white whitespace-normal break-words">${nomeExibicao}</h3>
+                            <div class="flex items-center space-x-2.5 flex-1 min-w-0 pr-2">
+                                <input type="checkbox" ${p.registrado ? 'checked' : ''} onchange="alternarRegistroPaciente(${p.id})" class="w-5 h-5 rounded accent-emerald-500 bg-slate-900 border-slate-600 cursor-pointer shrink-0" title="Marcar como registrado no sistema">
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider block">${programaAbreviado} ${p.classificacao ? '· ' + p.classificacao : ''}</span>
+                                    <h3 class="font-bold text-sm sm:text-base text-white truncate" title="${nomeExibicao}">${nomeExibicao}</h3>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs px-2.5 py-0.5 rounded-full ${badgeClass}">Visita: ${statusVisita}</span>
-                                <button onclick="abrirModalEdicao(${p.id})" class="btn-prontuario bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition shrink-0" title="Abrir Prontuário">📖 Prontuário</button>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <span class="text-xs px-2.5 py-0.5 rounded-full ${badgeClass}">${statusVisita}</span>
+                                <button onclick="abrirModalEdicao(${p.id})" class="btn-prontuario bg-slate-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition" title="Abrir Prontuário">📖 Prontuário</button>
                             </div>
                         </div>
                         <div class="caixa-info-paciente grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-white bg-slate-700/30 p-2.5 rounded-lg border border-slate-600/40">
@@ -1170,7 +1170,7 @@
             window.print();
         }
 
-        // MOTOR DE PROCESSAMENTO DE COLAGEM COM LIMPEZA PRECISA DO NOME
+        // MOTOR DE PROCESSAMENTO DE COLAGEM COM LIMPEZA RIGOROSA DO NOME
         function processarColagemIndicador(nomeIndicador, programaPadrao, classificacaoPadrao) {
             const texto = document.getElementById(`texto-colar-${nomeIndicador}`).value.trim();
             if(!texto) {
@@ -1185,7 +1185,7 @@
                 if (nomeIndicador === 'Hipertensos') return !prog.includes('HIPERTENSO');
                 if (nomeIndicador === 'Diabeticos') return !prog.includes('DIABETICO');
                 if (nomeIndicador === 'Criancas') return !prog.includes('CRIANCA');
-                if (nomeIndicador === 'Idosos') return !prog.includes('IDOSO');
+                if (nomeIndicador === 'Idosos') return !prog.includes('SAUDE DO IDOSO');
                 return true;
             });
 
@@ -1237,12 +1237,13 @@
                         let partesRua = linha.toUpperCase().split(ruaValida);
                         let antesRua = partesRua[0];
                         
-                        // Limpeza rigorosa para extrair apenas o nome do paciente
+                        // Limpeza rigorosa para remover qualquer vestígio de cabeçalhos anteriores
                         antesRua = antesRua.replace(/CRIANÇA NORMAL \/ ROTINA|CRIANCA|SAUDE DO IDOSO|HIPERTENSO|DIABETICO|ROBUSTO|RISCO AO NASCER|RISCO EVOLUTIVO BIOLOGICO|UMS UMBARA II PSF|PROGRAMA|CLASSIFICACAO|RISCO AO NASCER \(CRITERIOS DNV\)|ROTINA/gi, '').trim();
                         
-                        // Remove possíveis números ou termos espúrios que sobraram à esquerda
+                        // Pega apenas as palavras reais do nome no final da string antes da rua
                         let palavras = antesRua.split(/\s+/).filter(p => p.length > 1 && !/^\d+$/.test(p));
                         if (palavras.length > 0) {
+                            // Pega até 4 últimas palavras que formam o nome limpo
                             nome = palavras.slice(-4).join(' ');
                         }
                         
